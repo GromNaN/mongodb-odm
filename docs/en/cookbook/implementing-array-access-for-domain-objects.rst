@@ -9,10 +9,10 @@ in templates. In these examples we will implement ArrayAccess on a
 `Layer Supertype <http://martinfowler.com/eaaCatalog/layerSupertype.html>`_
 for all our domain objects.
 
-Option 1
---------
+Option 1: Dynamic Property Access
+---------------------------------
 
-In this implementation we will make use of PHPs highly dynamic
+In this implementation we will make use of PHP's highly dynamic
 nature to dynamically access properties of a subtype in a supertype
 at runtime. Note that this implementation has 2 main caveats:
 
@@ -30,24 +30,32 @@ at runtime. Note that this implementation has 2 main caveats:
             return isset($this->$offset);
         }
 
-        public function offsetSet($offset, $value): void
+        public function offsetGet($offset): mixed
         {
-            $this->$offset = $value;
+            if (! property_exists($this, $offset)) {
+                throw new InvalidArgumentException(sprintf('The property "%s" is not defined.', $offset));
+            }
+
+            return $this->$offset;
         }
 
-        public function offsetGet($offset)
+        public function offsetSet($offset, $value): void
         {
-            return $this->$offset;
+            if (! property_exists($this, $offset)) {
+                throw new InvalidArgumentException(sprintf('The property "%s" is not defined.', $offset));
+            }
+
+            $this->$offset = $value;
         }
 
         public function offsetUnset($offset): void
         {
-            $this->$offset = null;
+            unset($this->$offset);
         }
     }
 
-Option 2
---------
+Option 2: Dynamic Getter/Setter Invocation
+------------------------------------------
 
 In this implementation we will dynamically invoke getters/setters.
 Again we use PHPs dynamic nature to invoke methods on a subtype
@@ -66,58 +74,67 @@ caveats:
     {
         public function offsetExists($offset): bool
         {
+            $getter = 'get' . $offset;
+
+            // If the method does not exist, we say that the offset does not exist
+            if (! method_exists($this, $getter)) {
+                return false;
+            }
+
             // In this example we say that exists means it is not null
-            $value = $this->{"get$offset"}();
-            return $value !== null;
+            return $this->$getter() !== null;
+        }
+
+        public function offsetGet($offset): mixed
+        {
+            $getter = 'get' . $offset;
+
+            // If the method does not exist, we say that the offset does not exist
+            if (! method_exists($this, $getter)) {
+                throw new InvalidArgumentException(sprintf('The property "%s" is not readable.', $offset));
+            }
+
+            // In this example we say that exists means it is not null
+            return $this->$getter() !== null;
         }
 
         public function offsetSet($offset, $value): void
         {
-            $this->{"set$offset"}($value);
-        }
+            $setter = 'set' . $offset;
 
-        public function offsetGet($offset)
-        {
-            return $this->{"get$offset"}();
+            if (! method_exists($this, $setter)) {
+                throw new InvalidArgumentException(sprintf('The property "%s" is not writable.', $offset));
+            }
+
+            $this->$setter($value);
         }
 
         public function offsetUnset($offset): void
         {
-            $this->{"set$offset"}(null);
+            $this->offsetSet($offset, null);
         }
     }
 
 Read-only
 ---------
 
-You can slightly tweak option 1 or option 2 in order to make array
-access read-only. This will also circumvent some of the caveats of
-each option. Simply make offsetSet and offsetUnset throw an
-exception (i.e. BadMethodCallException).
+You can slightly tweak option 1 or option 2 in order to make array access
+read-only. Make ``offsetSet`` and ``offsetUnset`` throw an exception (i.e.
+``BadMethodCallException```).
 
 .. code-block:: php
 
     <?php
 
-    abstract class DomainObject implements ArrayAccess
+    trait ReadOnlyArrayAccessTrait
     {
-        public function offsetExists($offset): bool
-        {
-            // option 1 or option 2
-        }
-
         public function offsetSet($offset, $value): void
         {
-            throw new BadMethodCallException("Array access of class " . get_class($this) . " is read-only!");
-        }
-
-        public function offsetGet($offset)
-        {
-            // option 1 or option 2
+            throw new BadMethodCallException(sprintf('Array access of class "%s" is read-only!', static::class);
         }
 
         public function offsetUnset($offset): void
         {
-            throw new BadMethodCallException("Array access of class " . get_class($this) . " is read-only!");
+            throw new BadMethodCallException(sprintf('Array access of class "%s" is read-only!', static::class);
         }
     }
