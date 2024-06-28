@@ -12,7 +12,7 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations\Id;
 class User
 {
     #[Id]
-    public string $id;
+    public readonly string $id;
 
     public function __construct(
         #[Field(type: 'string')]

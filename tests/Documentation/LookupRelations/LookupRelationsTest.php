@@ -54,6 +54,14 @@ class LookupRelationsTest extends BaseTestCase
         $this->dm->clear();
     }
 
+    public function testReadonly()
+    {
+        $all = $this->dm->getRepository(Order::class)->findAll();
+        foreach ($all as $order) {
+            $name = $order->user->name;
+        }
+    }
+
     public function testLookupReference(): void
     {
         $aggregation = $this->dm->createAggregationBuilder(Order::class)
