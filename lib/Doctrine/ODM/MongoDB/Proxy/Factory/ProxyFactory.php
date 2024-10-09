@@ -6,6 +6,7 @@ namespace Doctrine\ODM\MongoDB\Proxy\Factory;
 
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use ProxyManager\Proxy\GhostObjectInterface;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 
 interface ProxyFactory
 {
@@ -19,7 +20,7 @@ interface ProxyFactory
      * @param mixed $identifier
      * @phpstan-param ClassMetadata<T> $metadata
      *
-     * @return T&GhostObjectInterface<T>
+     * @return T&(GhostObjectInterface<T>|InternalProxy<T>)
      *
      * @template T of object
      */
