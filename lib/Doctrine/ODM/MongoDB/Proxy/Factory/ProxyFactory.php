@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Doctrine\ODM\MongoDB\Proxy\Factory;
 
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
-use ProxyManager\Proxy\GhostObjectInterface;
 use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
+use ProxyManager\Proxy\GhostObjectInterface;
 
 interface ProxyFactory
 {
@@ -24,5 +24,5 @@ interface ProxyFactory
      *
      * @template T of object
      */
-    public function getProxy(ClassMetadata $metadata, $identifier): GhostObjectInterface;
+    public function getProxy(ClassMetadata $metadata, $identifier): GhostObjectInterface|InternalProxy;
 }

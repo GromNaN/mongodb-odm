@@ -83,6 +83,16 @@ class Configuration
     public const AUTOGENERATE_EVAL = 3;
 
     /**
+     * Autogenerate the proxy class when the proxy file does not exist or
+     * when the proxied file changed.
+     *
+     * This strategy causes a file_exists() call whenever any proxy is used the
+     * first time in a request. When the proxied file is changed, the proxy will
+     * be updated.
+     */
+    public const AUTOGENERATE_FILE_NOT_EXISTS_OR_CHANGED = 4;
+
+    /**
      * Array of attributes for this configuration instance.
      *
      * @psalm-var array{
@@ -607,6 +617,30 @@ class Configuration
     public function isTransactionalFlushEnabled(): bool
     {
         return $this->useTransactionalFlush;
+    }
+
+    public function isLazyGhostObjectEnabled(): bool
+    {
+        return $this->isLazyGhostObjectEnabled;
+    }
+
+    public function setLazyGhostObjectEnabled(bool $flag): void
+    {
+        if ($flag && ! trait_exists(LazyGhostTrait::class)) {
+            throw new \LogicException(
+                'Lazy ghost objects cannot be enabled because the "symfony/var-exporter" library'
+                . ' version 6.4 or higher is not installed. Please run "composer require symfony/var-exporter:^6.4|^7".'
+            );
+        }
+
+        if ($flag && ! class_exists(RuntimeReflectionProperty::class)) {
+            throw new \LogicException(
+                'Lazy ghost objects cannot be enabled because the "doctrine/persistence" library'
+                . ' version 3.1 or higher is not installed. Please run "composer update doctrine/persistence".'
+            );
+        }
+
+        $this->_attributes['isLazyGhostObjectEnabled'] = $flag;
     }
 }
 

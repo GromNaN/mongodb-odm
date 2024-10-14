@@ -1,26 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Doctrine\ODM\MongoDB;
 
-use Doctrine\ORM\Mapping\AssociationMapping;
-use Doctrine\ORM\Mapping\ClassMetadata;
-use InvalidArgumentException as BasseInvalidArgumentException;
-use Stringable;
+use InvalidArgumentException as BaseInvalidArgumentException;
 
-use function array_map;
-use function count;
 use function get_debug_type;
-use function gettype;
-use function implode;
 use function is_scalar;
-use function reset;
-use function spl_object_id;
 use function sprintf;
 
 /**
  * Contains exception messages for all invalid lifecycle state exceptions inside UnitOfWork
  */
-class InvalidArgumentException extends BasseInvalidArgumentException
+final class InvalidArgumentException extends BaseInvalidArgumentException
 {
     public static function proxyDirectoryRequired(): self
     {
@@ -35,5 +28,15 @@ class InvalidArgumentException extends BasseInvalidArgumentException
     public static function proxyDirectoryNotWritable(string $proxyDirectory): self
     {
         return new self(sprintf('Your proxy directory "%s" must be writable', $proxyDirectory));
+    }
+
+    public static function invalidAutoGenerateMode(mixed $value): self
+    {
+        return new self(sprintf('Invalid auto generate mode "%s" given.', is_scalar($value) ? (string) $value : get_debug_type($value)));
+    }
+
+    public static function missingPrimaryKeyValue(string $className, string $idField): self
+    {
+        return new self(sprintf('Missing value for primary key %s on %s', $idField, $className));
     }
 }

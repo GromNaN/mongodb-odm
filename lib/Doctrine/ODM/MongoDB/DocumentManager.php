@@ -9,7 +9,8 @@ use Doctrine\ODM\MongoDB\Hydrator\HydratorFactory;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadataFactoryInterface;
 use Doctrine\ODM\MongoDB\Mapping\MappingException;
-use Doctrine\ODM\MongoDB\Proxy\Factory\AwesomeProxyFactory;
+use Doctrine\ODM\MongoDB\Proxy\Factory\CopiedLazyGhostProxyFactory;
+use Doctrine\ODM\MongoDB\Proxy\Factory\LazyGhostProxyFactory;
 use Doctrine\ODM\MongoDB\Proxy\Factory\ProxyFactory;
 use Doctrine\ODM\MongoDB\Proxy\Factory\StaticProxyFactory;
 use Doctrine\ODM\MongoDB\Proxy\Resolver\CachingClassNameResolver;
@@ -182,7 +183,7 @@ class DocumentManager implements ObjectManager
 
         $this->unitOfWork        = new UnitOfWork($this, $this->eventManager, $this->hydratorFactory);
         $this->schemaManager     = new SchemaManager($this, $this->metadataFactory);
-        $this->proxyFactory      = new AwesomeProxyFactory($this);
+        $this->proxyFactory      = new LazyGhostProxyFactory($this);
         $this->repositoryFactory = $this->config->getRepositoryFactory();
     }
 
