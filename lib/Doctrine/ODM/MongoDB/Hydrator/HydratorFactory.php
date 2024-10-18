@@ -13,7 +13,7 @@ use Doctrine\ODM\MongoDB\Events;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Doctrine\ODM\MongoDB\Types\Type;
 use Doctrine\ODM\MongoDB\UnitOfWork;
-use ProxyManager\Proxy\GhostObjectInterface;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 
 use function array_key_exists;
 use function chmod;
@@ -448,10 +448,10 @@ EOF
             }
         }
 
-        if ($document instanceof GhostObjectInterface && $document->getProxyInitializer() !== null) {
+        if ($document instanceof InternalProxy && $document->getProxyInitializer() !== null) {
             // Inject an empty initialiser to not load any object data
             $document->setProxyInitializer(static function (
-                GhostObjectInterface $ghostObject,
+                InternalProxy $ghostObject,
                 string $method, // we don't care
                 array $parameters, // we don't care
                 &$initializer,

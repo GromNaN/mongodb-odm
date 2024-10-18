@@ -28,7 +28,6 @@ use InvalidArgumentException;
 use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\Session;
 use MongoDB\Driver\WriteConcern;
-use ProxyManager\Proxy\GhostObjectInterface;
 use ReflectionProperty;
 use Throwable;
 use UnexpectedValueException;
@@ -971,7 +970,7 @@ final class UnitOfWork implements PropertyChangedListener
         $class                 = $this->dm->getClassMetadata($parentDocument::class);
         $topOrExistingDocument = ( ! $isNewParentDocument || ! $class->isEmbeddedDocument);
 
-        if ($value instanceof GhostObjectInterface && ! $value->isProxyInitialized()) {
+        if ($value instanceof InternalProxy && ! $value->isProxyInitialized()) {
             return;
         }
 
@@ -3058,7 +3057,7 @@ final class UnitOfWork implements PropertyChangedListener
      */
     public function initializeObject(object $obj): void
     {
-        if ($obj instanceof GhostObjectInterface && $obj->isProxyInitialized() === false) {
+        if ($obj instanceof InternalProxy && $obj->isProxyInitialized() === false) {
             $obj->initializeProxy();
         } elseif ($obj instanceof PersistentCollectionInterface) {
             $obj->initialize();
@@ -3073,7 +3072,7 @@ final class UnitOfWork implements PropertyChangedListener
     public function isUninitializedObject(object $obj): bool
     {
         return match (true) {
-            $obj instanceof GhostObjectInterface => $obj->isProxyInitialized() === false,
+            $obj instanceof InternalProxy => $obj->isProxyInitialized() === false,
             $obj instanceof PersistentCollectionInterface => $obj->isInitialized() === false,
             $obj instanceof Proxy\InternalProxy => $obj->__isInitialized() === false,
             default => false
