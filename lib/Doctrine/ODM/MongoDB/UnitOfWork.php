@@ -19,6 +19,7 @@ use Doctrine\ODM\MongoDB\Types\DateType;
 use Doctrine\ODM\MongoDB\Types\Type;
 use Doctrine\ODM\MongoDB\Utility\CollectionHelper;
 use Doctrine\ODM\MongoDB\Utility\LifecycleEventManager;
+use Doctrine\ORM\Proxy\InternalProxy;
 use Doctrine\Persistence\Mapping\ReflectionService;
 use Doctrine\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\Persistence\NotifyPropertyChanged;
@@ -3074,6 +3075,7 @@ final class UnitOfWork implements PropertyChangedListener
         return match (true) {
             $obj instanceof GhostObjectInterface => $obj->isProxyInitialized() === false,
             $obj instanceof PersistentCollectionInterface => $obj->isInitialized() === false,
+            $obj instanceof Proxy\InternalProxy => $obj->__isInitialized() === false,
             default => false
         };
     }
