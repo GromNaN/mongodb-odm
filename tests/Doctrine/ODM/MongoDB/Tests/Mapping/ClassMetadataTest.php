@@ -8,6 +8,7 @@ use Doctrine\ODM\MongoDB\Events;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Doctrine\ODM\MongoDB\Mapping\MappingException;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use Doctrine\ODM\MongoDB\Tests\ClassMetadataTestUtil;
@@ -36,7 +37,6 @@ use Documents\UserTyped;
 use Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
-use ProxyManager\Proxy\GhostObjectInterface;
 use ReflectionClass;
 use ReflectionException;
 use stdClass;
@@ -493,7 +493,7 @@ class ClassMetadataTest extends BaseTestCase
         $metadata = $this->dm->getClassMetadata(Album::class);
 
         self::assertEquals($document->getName(), $metadata->getFieldValue($proxy, 'name'));
-        self::assertInstanceOf(GhostObjectInterface::class, $proxy);
+        self::assertInstanceOf(InternalProxy::class, $proxy);
         self::assertFalse($this->uow->isUninitializedObject($proxy));
     }
 
@@ -508,7 +508,7 @@ class ClassMetadataTest extends BaseTestCase
         $metadata = $this->dm->getClassMetadata(Album::class);
 
         self::assertEquals($document->getId(), $metadata->getFieldValue($proxy, 'id'));
-        self::assertInstanceOf(GhostObjectInterface::class, $proxy);
+        self::assertInstanceOf(InternalProxy::class, $proxy);
         self::assertTrue($this->uow->isUninitializedObject($proxy));
     }
 
@@ -530,7 +530,7 @@ class ClassMetadataTest extends BaseTestCase
         $this->dm->clear();
 
         $proxy = $this->dm->getReference(Album::class, $document->getId());
-        self::assertInstanceOf(GhostObjectInterface::class, $proxy);
+        self::assertInstanceOf(InternalProxy::class, $proxy);
 
         $metadata = $this->dm->getClassMetadata(Album::class);
         $metadata->setFieldValue($proxy, 'name', 'nevermind');
@@ -539,7 +539,8 @@ class ClassMetadataTest extends BaseTestCase
         $this->dm->clear();
 
         $proxy = $this->dm->getReference(Album::class, $document->getId());
-        self::assertInstanceOf(GhostObjectInterface::class, $proxy);
+        self::assertInstanceOf(InternalProxy::class, $proxy);
+        self::assertInstanceOf(Album::class, $proxy);
 
         self::assertEquals('nevermind', $proxy->getName());
     }

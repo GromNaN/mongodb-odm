@@ -17,8 +17,6 @@ use Symfony\Component\VarExporter\ProxyHelper;
 
 use function array_combine;
 use function array_flip;
-use function array_intersect_key;
-use function assert;
 use function bin2hex;
 use function chmod;
 use function class_exists;
@@ -151,7 +149,7 @@ EOPHP;
         }
 
         $this->uow          = $dm->getUnitOfWork();
-        $this->autoGenerate = (int) $autoGenerate;
+        $this->autoGenerate = self::AUTOGENERATE_ALWAYS; // @todo (int) $autoGenerate;
     }
 
     /** @param array<mixed> $identifier */
@@ -210,11 +208,11 @@ EOPHP;
      */
     private function createLazyInitializer(ClassMetadata $classMetadata, DocumentPersister $documentPersister): Closure
     {
-        return static function (InternalProxy $proxy, array $identifier) use ($documentPersister, $classMetadata): void {
-            $original = $documentPersister->loadById($identifier);
+        return static function (InternalProxy $proxy, mixed $identifier) use ($documentPersister, $classMetadata): void {
+            $original = $documentPersister->load(['_id' => $identifier]);
 
             if ($original === null) {
-                throw DocumentNotFoundException::fromClassNameAndIdentifier(
+                throw DocumentNotFoundException::documentNotFound(
                     $classMetadata->getName(),
                     $identifier,
                 );
@@ -256,7 +254,7 @@ EOPHP;
             foreach ($reflector->getProperties($filter) as $property) {
                 $name = $property->name;
 
-                if ($property->isStatic() || (($class->hasField($name) || $class->hasAssociation($name)) && ! isset($identifiers[$name]))) {
+                if ($property->isStatic() || (($class->hasField($name) || $class->hasAssociation($name)))) {
                     continue;
                 }
 
@@ -269,25 +267,17 @@ EOPHP;
             $reflector = $reflector->getParentClass();
         }
 
-        $className        = $class->getName(); // aliases and case sensitivity
-        $entityPersister  = $this->uow->getDocumentPersister($className);
-        $initializer      = $this->createLazyInitializer($class, $entityPersister);
-        $proxyClassName   = $this->loadProxyClass($class);
+        $className       = $class->getName(); // aliases and case sensitivity
+        $entityPersister = $this->uow->getDocumentPersister($className);
+        $initializer     = $this->createLazyInitializer($class, $entityPersister);
+        $proxyClassName  = $this->loadProxyClass($class);
 
-        $proxyFactory = Closure::bind(static function (mixed $identifier) use ($initializer, $skippedProperties, , $className): InternalProxy {
+        $proxyFactory = Closure::bind(static function (mixed $identifier) use ($initializer, $skippedProperties, $class): InternalProxy {
             $proxy = self::createLazyGhost(static function (InternalProxy $object) use ($initializer, $identifier): void {
                 $initializer($object, $identifier);
             }, $skippedProperties);
 
-
-            foreach ($identifierFields as $idField => $reflector) {
-                if (! isset($identifier[$idField])) {
-                    throw InvalidArgumentException::missingPrimaryKeyValue($className, $idField);
-                }
-
-                assert($reflector !== null);
-                $reflector->setValue($proxy, $identifier[$idField]);
-            }
+            $class->setIdentifierValue($proxy, $identifier);
 
             return $proxy;
         }, null, $proxyClassName);
