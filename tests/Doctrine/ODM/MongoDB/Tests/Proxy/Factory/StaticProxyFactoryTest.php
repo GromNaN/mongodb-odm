@@ -9,13 +9,13 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Event\DocumentNotFoundEventArgs;
 use Doctrine\ODM\MongoDB\Events;
 use Doctrine\ODM\MongoDB\LockException;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use Documents\Cart;
 use MongoDB\Client;
 use MongoDB\Collection;
 use MongoDB\Database;
 use PHPUnit\Framework\MockObject\MockObject;
-use ProxyManager\Proxy\GhostObjectInterface;
 
 class StaticProxyFactoryTest extends BaseTestCase
 {
@@ -49,7 +49,7 @@ class StaticProxyFactoryTest extends BaseTestCase
         $uow = $this->dm->getUnitOfWork();
 
         $proxy = $this->dm->getReference(Cart::class, '123');
-        self::assertInstanceOf(GhostObjectInterface::class, $proxy);
+        self::assertInstanceOf(InternalProxy::class, $proxy);
 
         $closure = static function (DocumentNotFoundEventArgs $eventArgs) {
             self::fail('DocumentNotFoundListener should not be called');
