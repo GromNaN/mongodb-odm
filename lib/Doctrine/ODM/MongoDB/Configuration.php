@@ -23,9 +23,6 @@ use Doctrine\ODM\MongoDB\Repository\RepositoryFactory;
 use Doctrine\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\Persistence\ObjectRepository;
 use MongoDB\Driver\WriteConcern;
-use project\Controller\TodoController;
-use ProxyManager\Configuration as ProxyManagerConfiguration;
-use ProxyManager\Factory\LazyLoadingGhostFactory;
 use Psr\Cache\CacheItemPoolInterface;
 use ReflectionClass;
 
