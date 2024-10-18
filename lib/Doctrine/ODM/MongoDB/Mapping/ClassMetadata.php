@@ -23,7 +23,7 @@ use Doctrine\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\Persistence\Reflection\EnumReflectionProperty;
 use InvalidArgumentException;
 use LogicException;
-use ProxyManager\Proxy\GhostObjectInterface;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionNamedType;
@@ -1898,7 +1898,7 @@ use function trigger_deprecation;
      */
     public function setFieldValue(object $document, string $field, $value): void
     {
-        if ($document instanceof GhostObjectInterface && ! $document->isProxyInitialized()) {
+        if ($document instanceof InternalProxy && ! $document->isProxyInitialized()) {
             //property changes to an uninitialized proxy will not be tracked or persisted,
             //so the proxy needs to be loaded first.
             $document->initializeProxy();
@@ -1914,7 +1914,7 @@ use function trigger_deprecation;
      */
     public function getFieldValue(object $document, string $field)
     {
-        if ($document instanceof GhostObjectInterface && $field !== $this->identifier && ! $document->isProxyInitialized()) {
+        if ($document instanceof InternalProxy && $field !== $this->identifier && ! $document->isProxyInitialized()) {
             $document->initializeProxy();
         }
 

@@ -39,4 +39,9 @@ final class InvalidArgumentException extends BaseInvalidArgumentException
     {
         return new self(sprintf('Missing value for primary key %s on %s', $idField, $className));
     }
+
+    public static function notAProxyClass(string $className, string $proxyNamespace): self
+    {
+        return new self(sprintf('The class %s is not a proxy class in namespace %s', $className, $proxyNamespace));
+    }
 }
