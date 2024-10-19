@@ -31,6 +31,16 @@ no longer implements the `PropertyChangedListener` interface.
 `AnnotationDriver` class defined in `doctrine/persistence` (or in ODM's 
 compatibility layer)
 
+## Proxy objects
+
+The proxy implementation changed back to Doctrine proxies.
+If you are checking for proxies, the following changed:
+* Proxies no longer implement `ProxyManager\Proxy\GhostObjectInterface`.
+  To check whether a returned object is a proxy, check for the
+  `Doctrine\Persistence\Proxy` interface.
+* The `initializeProxy` method has been replaced by `__load`.
+* The `isProxyInitialized` method has been replaced by `__isInitialized`.
+
 ## Proxy Class Name Resolution
 
 The `Doctrine\ODM\MongoDB\Proxy\Resolver\ClassNameResolver` interface has been
