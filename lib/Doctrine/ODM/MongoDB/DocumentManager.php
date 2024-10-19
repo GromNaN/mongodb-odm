@@ -9,11 +9,10 @@ use Doctrine\ODM\MongoDB\Hydrator\HydratorFactory;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadataFactoryInterface;
 use Doctrine\ODM\MongoDB\Mapping\MappingException;
-use Doctrine\ODM\MongoDB\Proxy\Factory\ProxyFactory;
-use Doctrine\ODM\MongoDB\Proxy\Factory\StaticProxyFactory;
-use Doctrine\ODM\MongoDB\Proxy\Resolver\CachingClassNameResolver;
-use Doctrine\ODM\MongoDB\Proxy\Resolver\ClassNameResolver;
-use Doctrine\ODM\MongoDB\Proxy\Resolver\ProxyManagerClassNameResolver;
+use Doctrine\ODM\MongoDB\Proxy\DefaultProxyClassNameResolver;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
+use Doctrine\ODM\MongoDB\Proxy\LazyGhostProxyFactory;
+use Doctrine\ODM\MongoDB\Proxy\ProxyFactory;
 use Doctrine\ODM\MongoDB\Query\FilterCollection;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\ODM\MongoDB\Repository\GridFSRepository;
@@ -28,7 +27,6 @@ use MongoDB\Collection;
 use MongoDB\Database;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\GridFS\Bucket;
-use ProxyManager\Proxy\GhostObjectInterface;
 use RuntimeException;
 use Throwable;
 
@@ -132,7 +130,6 @@ class DocumentManager implements ObjectManager
      */
     private ?FilterCollection $filterCollection = null;
 
-    /** @var ProxyClassNameResolver&ClassNameResolver  */
     private ProxyClassNameResolver $classNameResolver;
 
     private static ?string $version = null;
@@ -156,7 +153,7 @@ class DocumentManager implements ObjectManager
             ],
         );
 
-        $this->classNameResolver = new CachingClassNameResolver(new ProxyManagerClassNameResolver($this->config));
+        $this->classNameResolver = new DefaultProxyClassNameResolver();
 
         $metadataFactoryClassName = $this->config->getClassMetadataFactoryName();
         $this->metadataFactory    = new $metadataFactoryClassName();
@@ -181,7 +178,12 @@ class DocumentManager implements ObjectManager
 
         $this->unitOfWork        = new UnitOfWork($this, $this->eventManager, $this->hydratorFactory);
         $this->schemaManager     = new SchemaManager($this, $this->metadataFactory);
-        $this->proxyFactory      = new StaticProxyFactory($this);
+        $this->proxyFactory      = new LazyGhostProxyFactory(
+            $this,
+            $config->getProxyDir(),
+            $config->getProxyNamespace(),
+            $config->getAutoGenerateProxyClasses(),
+        );
         $this->repositoryFactory = $this->config->getRepositoryFactory();
     }
 
@@ -278,7 +280,7 @@ class DocumentManager implements ObjectManager
      *
      * @deprecated Fetch metadata for any class string (e.g. proxy object class) and read the class name from the metadata object
      */
-    public function getClassNameResolver(): ClassNameResolver
+    public function getClassNameResolver(): ProxyClassNameResolver
     {
         return $this->classNameResolver;
     }
@@ -589,7 +591,7 @@ class DocumentManager implements ObjectManager
      * @param mixed           $identifier
      * @param class-string<T> $documentName
      *
-     * @return T|(T&GhostObjectInterface<T>)
+     * @return T|(T&InternalProxy<T>)
      *
      * @template T of object
      */
@@ -606,7 +608,7 @@ class DocumentManager implements ObjectManager
             return $document;
         }
 
-        /** @var T&GhostObjectInterface<T> $document */
+        /** @var T&InternalProxy<T> $document */
         $document = $this->proxyFactory->getProxy($class, $identifier);
         $this->unitOfWork->registerManaged($document, $identifier, []);
 

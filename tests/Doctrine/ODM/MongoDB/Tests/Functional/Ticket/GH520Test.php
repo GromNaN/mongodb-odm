@@ -7,8 +7,8 @@ namespace Doctrine\ODM\MongoDB\Tests\Functional\Ticket;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
-use ProxyManager\Proxy\GhostObjectInterface;
 
 class GH520Test extends BaseTestCase
 {
@@ -29,7 +29,7 @@ class GH520Test extends BaseTestCase
         $document = $query->getSingleResult();
 
         self::assertInstanceOf(GH520Document::class, $document);
-        self::assertInstanceOf(GhostObjectInterface::class, $document->ref);
+        self::assertInstanceOf(InternalProxy::class, $document->ref);
         self::assertFalse($this->uow->isUninitializedObject($document->ref));
     }
 

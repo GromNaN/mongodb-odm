@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Doctrine\ODM\MongoDB\Tests\Functional;
 
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use Documents\SimpleReferenceUser;
 use Documents\User;
 use MongoDB\BSON\ObjectId;
-use ProxyManager\Proxy\GhostObjectInterface;
 use stdClass;
 
 use function assert;
@@ -84,10 +84,10 @@ class SimpleReferencesTest extends BaseTestCase
 
         self::assertNotNull($test);
         $user = $test->getUser();
-        assert($user instanceof User && $user instanceof GhostObjectInterface);
+        assert($user instanceof User && $user instanceof InternalProxy);
         self::assertNotNull($user);
         self::assertInstanceOf(User::class, $user);
-        self::assertInstanceOf(GhostObjectInterface::class, $user);
+        self::assertInstanceOf(InternalProxy::class, $user);
         self::assertTrue($this->uow->isUninitializedObject($user));
         self::assertEquals('jwage', $user->getUsername());
         self::assertFalse($this->uow->isUninitializedObject($user));

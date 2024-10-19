@@ -14,6 +14,7 @@ use Doctrine\ODM\MongoDB\PersistentCollection\PersistentCollectionException;
 use Doctrine\ODM\MongoDB\PersistentCollection\PersistentCollectionInterface;
 use Doctrine\ODM\MongoDB\Persisters\CollectionPersister;
 use Doctrine\ODM\MongoDB\Persisters\PersistenceBuilder;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Types\DateType;
 use Doctrine\ODM\MongoDB\Types\Type;
@@ -23,11 +24,11 @@ use Doctrine\Persistence\Mapping\ReflectionService;
 use Doctrine\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\Persistence\NotifyPropertyChanged;
 use Doctrine\Persistence\PropertyChangedListener;
+use Doctrine\Persistence\Proxy;
 use InvalidArgumentException;
 use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\Session;
 use MongoDB\Driver\WriteConcern;
-use ProxyManager\Proxy\GhostObjectInterface;
 use ReflectionProperty;
 use Throwable;
 use UnexpectedValueException;
@@ -970,7 +971,7 @@ final class UnitOfWork implements PropertyChangedListener
         $class                 = $this->dm->getClassMetadata($parentDocument::class);
         $topOrExistingDocument = ( ! $isNewParentDocument || ! $class->isEmbeddedDocument);
 
-        if ($value instanceof GhostObjectInterface && ! $value->isProxyInitialized()) {
+        if ($value instanceof Proxy && ! $value->__isInitialized()) {
             return;
         }
 
@@ -2777,7 +2778,8 @@ final class UnitOfWork implements PropertyChangedListener
             $document = $this->identityMap[$class->name][$serializedId];
             $oid      = spl_object_hash($document);
             if ($this->isUninitializedObject($document)) {
-                $document->setProxyInitializer(null);
+                assert($document instanceof InternalProxy);
+                $document->__setInitialized(true);
                 $overrideLocalValues = true;
                 if ($document instanceof NotifyPropertyChanged) {
                     $document->addPropertyChangedListener($this);
@@ -3057,8 +3059,8 @@ final class UnitOfWork implements PropertyChangedListener
      */
     public function initializeObject(object $obj): void
     {
-        if ($obj instanceof GhostObjectInterface && $obj->isProxyInitialized() === false) {
-            $obj->initializeProxy();
+        if ($obj instanceof Proxy && $obj->__isInitialized() === false) {
+            $obj->__load();
         } elseif ($obj instanceof PersistentCollectionInterface) {
             $obj->initialize();
         }
@@ -3072,8 +3074,8 @@ final class UnitOfWork implements PropertyChangedListener
     public function isUninitializedObject(object $obj): bool
     {
         return match (true) {
-            $obj instanceof GhostObjectInterface => $obj->isProxyInitialized() === false,
             $obj instanceof PersistentCollectionInterface => $obj->isInitialized() === false,
+            $obj instanceof Proxy => $obj->__isInitialized() === false,
             default => false
         };
     }

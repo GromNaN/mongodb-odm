@@ -13,6 +13,7 @@ use Doctrine\Instantiator\Instantiator;
 use Doctrine\Instantiator\InstantiatorInterface;
 use Doctrine\ODM\MongoDB\Id\IdGenerator;
 use Doctrine\ODM\MongoDB\LockException;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Types\Incrementable;
 use Doctrine\ODM\MongoDB\Types\Type;
 use Doctrine\ODM\MongoDB\Types\Versionable;
@@ -23,7 +24,6 @@ use Doctrine\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\Persistence\Reflection\EnumReflectionProperty;
 use InvalidArgumentException;
 use LogicException;
-use ProxyManager\Proxy\GhostObjectInterface;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionNamedType;
@@ -1889,10 +1889,10 @@ use function trigger_deprecation;
      */
     public function setFieldValue(object $document, string $field, $value): void
     {
-        if ($document instanceof GhostObjectInterface && ! $document->isProxyInitialized()) {
+        if ($document instanceof InternalProxy && ! $document->__isInitialized()) {
             //property changes to an uninitialized proxy will not be tracked or persisted,
             //so the proxy needs to be loaded first.
-            $document->initializeProxy();
+            $document->__load();
         }
 
         $this->reflFields[$field]->setValue($document, $value);
@@ -1905,8 +1905,8 @@ use function trigger_deprecation;
      */
     public function getFieldValue(object $document, string $field)
     {
-        if ($document instanceof GhostObjectInterface && $field !== $this->identifier && ! $document->isProxyInitialized()) {
-            $document->initializeProxy();
+        if ($document instanceof InternalProxy && $field !== $this->identifier && ! $document->__isInitialized()) {
+            $document->__load();
         }
 
         return $this->reflFields[$field]->getValue($document);

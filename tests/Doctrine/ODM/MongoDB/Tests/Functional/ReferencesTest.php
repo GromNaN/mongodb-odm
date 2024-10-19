@@ -12,6 +12,7 @@ use Doctrine\ODM\MongoDB\Iterator\Iterator;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Doctrine\ODM\MongoDB\PersistentCollection;
 use Doctrine\ODM\MongoDB\PersistentCollection\PersistentCollectionInterface;
+use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use Documents\Account;
 use Documents\Address;
@@ -22,8 +23,6 @@ use Documents\ProfileNotify;
 use Documents\User;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectId;
-use ProxyManager\Proxy\GhostObjectInterface;
-use ProxyManager\Proxy\LazyLoadingInterface;
 
 use function assert;
 
@@ -82,7 +81,7 @@ class ReferencesTest extends BaseTestCase
         assert($profile instanceof Profile);
 
         self::assertInstanceOf(Profile::class, $profile);
-        self::assertInstanceOf(GhostObjectInterface::class, $profile);
+        self::assertInstanceOf(InternalProxy::class, $profile);
 
         $profile->getFirstName();
 
@@ -104,7 +103,7 @@ class ReferencesTest extends BaseTestCase
 
         $user    = $this->dm->find($user::class, $user->getId());
         $profile = $user->getProfileNotify();
-        self::assertInstanceOf(GhostObjectInterface::class, $profile);
+        self::assertInstanceOf(InternalProxy::class, $profile);
         self::assertTrue($this->uow->isUninitializedObject($profile));
 
         $user->getProfileNotify()->setLastName('Malarz');
@@ -396,13 +395,13 @@ class ReferencesTest extends BaseTestCase
         );
 
         $test = $this->dm->find($test::class, $test->id);
-        self::assertInstanceOf(LazyLoadingInterface::class, $test->referenceOne);
+        self::assertInstanceOf(InternalProxy::class, $test->referenceOne);
         $this->expectException(DocumentNotFoundException::class);
         $this->expectExceptionMessage(
             'The "Doctrine\ODM\MongoDB\Tests\Functional\DocumentWithArrayId" document with identifier ' .
             '{"identifier":2} could not be found.',
         );
-        $test->referenceOne->initializeProxy();
+        $test->referenceOne->__load();
     }
 
     public function testDocumentNotFoundExceptionWithObjectId(): void
@@ -429,12 +428,12 @@ class ReferencesTest extends BaseTestCase
 
         $user    = $this->dm->find($user::class, $user->getId());
         $profile = $user->getProfile();
-        self::assertInstanceOf(LazyLoadingInterface::class, $profile);
+        self::assertInstanceOf(InternalProxy::class, $profile);
         $this->expectException(DocumentNotFoundException::class);
         $this->expectExceptionMessage(
             'The "Documents\Profile" document with identifier "abcdefabcdefabcdefabcdef" could not be found.',
         );
-        $profile->initializeProxy();
+        $profile->__load();
     }
 
     public function testDocumentNotFoundExceptionWithMongoBinDataId(): void
@@ -460,13 +459,13 @@ class ReferencesTest extends BaseTestCase
         );
 
         $test = $this->dm->find($test::class, $test->id);
-        self::assertInstanceOf(LazyLoadingInterface::class, $test->referenceOne);
+        self::assertInstanceOf(InternalProxy::class, $test->referenceOne);
         $this->expectException(DocumentNotFoundException::class);
         $this->expectExceptionMessage(
             'The "Doctrine\ODM\MongoDB\Tests\Functional\DocumentWithMongoBinDataId" document with identifier ' .
             '"testbindata" could not be found.',
         );
-        $test->referenceOne->initializeProxy();
+        $test->referenceOne->__load();
     }
 
     public function testDocumentNotFoundEvent(): void
@@ -502,8 +501,13 @@ class ReferencesTest extends BaseTestCase
 
         $this->dm->getEventManager()->addEventListener(Events::documentNotFound, new DocumentNotFoundListener($closure));
 
-        self::assertInstanceOf(LazyLoadingInterface::class, $profile);
-        $profile->initializeProxy();
+        self::assertInstanceOf(InternalProxy::class, $profile);
+        $this->expectException(DocumentNotFoundException::class);
+        $this->expectExceptionMessage(
+            'The "Documents\Profile" document with identifier ' .
+            '"abcdefabcdefabcdefabcdef" could not be found.',
+        );
+        $profile->__load();
     }
 }
 
