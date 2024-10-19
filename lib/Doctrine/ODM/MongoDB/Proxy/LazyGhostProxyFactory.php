@@ -195,21 +195,25 @@ EOPHP;
     protected function skipClass(ClassMetadata $metadata): bool
     {
         return $metadata->isMappedSuperclass
-            || $metadata->isEmbeddedClass
+            || $metadata->isEmbeddedDocument
             || $metadata->getReflectionClass()->isAbstract();
     }
 
     /**
      * Creates a closure capable of initializing a proxy
      *
-     * @return Closure(InternalProxy, array):void
+     * @param ClassMetadata<T> $classMetadata
+     *
+     * @return Closure(InternalProxy&T, array):void
      *
      * @throws DocumentNotFoundException
+     *
+     * @template T of object
      */
-    private function createLazyInitializer(ClassMetadata $classMetadata, DocumentPersister $documentPersister): Closure
+    private function createLazyInitializer(ClassMetadata $classMetadata, DocumentPersister $persister): Closure
     {
-        return static function (InternalProxy $proxy, mixed $identifier) use ($documentPersister, $classMetadata): void {
-            $original = $documentPersister->load(['_id' => $identifier]);
+        return static function (InternalProxy $proxy, mixed $identifier) use ($persister, $classMetadata): void {
+            $original = $persister->load(['_id' => $identifier]);
 
             if ($original === null) {
                 throw DocumentNotFoundException::documentNotFound(
@@ -222,7 +226,7 @@ EOPHP;
                 return;
             }
 
-            $class = $documentPersister->getClassMetadata();
+            $class = $persister->getClassMetadata();
 
             foreach ($class->getReflectionProperties() as $property) {
                 if (! $property || isset($identifier[$property->getName()]) || ! $class->hasField($property->getName()) && ! $class->hasAssociation($property->getName())) {

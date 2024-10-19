@@ -263,6 +263,8 @@ class Configuration
     /**
      * Gets an int flag that indicates whether proxy classes should always be regenerated
      * during each script execution.
+     *
+     * @return self::AUTOGENERATE_*
      */
     public function getAutoGenerateProxyClasses(): int
     {
