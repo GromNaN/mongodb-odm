@@ -17,7 +17,7 @@ use MongoDB\Collection;
 use MongoDB\Database;
 use PHPUnit\Framework\MockObject\MockObject;
 
-class StaticProxyFactoryTest extends BaseTestCase
+class LazyGhostProxyFactoryTest extends BaseTestCase
 {
     /** @var Client|MockObject */
     private Client $client;
@@ -57,7 +57,7 @@ class StaticProxyFactoryTest extends BaseTestCase
         $this->dm->getEventManager()->addEventListener(Events::documentNotFound, new DocumentNotFoundListener($closure));
 
         try {
-            $proxy->initializeProxy();
+            $proxy->__load();
             self::fail('An exception should have been thrown');
         } catch (LockException $exception) {
             self::assertInstanceOf(LockException::class, $exception);
@@ -65,7 +65,7 @@ class StaticProxyFactoryTest extends BaseTestCase
 
         $uow->computeChangeSets();
 
-        self::assertFalse($proxy->isProxyInitialized(), 'Proxy should not be initialized');
+        self::assertFalse($proxy->__isInitialized(), 'Proxy should not be initialized');
     }
 
     public function tearDown(): void
