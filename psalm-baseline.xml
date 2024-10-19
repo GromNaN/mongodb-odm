@@ -164,6 +164,9 @@
     <InvalidArgument>
       <code><![CDATA[$object]]></code>
     </InvalidArgument>
+    <InvalidArrayOffset>
+      <code><![CDATA[[$classMetadata->identifier => $identifier]]]></code>
+    </InvalidArrayOffset>
     <InvalidCast>
       <code><![CDATA[$autoGenerate]]></code>
     </InvalidCast>

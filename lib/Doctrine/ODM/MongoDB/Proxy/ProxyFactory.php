@@ -17,7 +17,6 @@ use ReflectionProperty;
 use Symfony\Component\VarExporter\ProxyHelper;
 
 use function array_combine;
-use function array_flip;
 use function bin2hex;
 use function chmod;
 use function class_exists;
@@ -177,7 +176,7 @@ EOPHP;
     private function createLazyInitializer(ClassMetadata $classMetadata, DocumentPersister $persister): Closure
     {
         return static function (InternalProxy $proxy, mixed $identifier) use ($persister, $classMetadata): void {
-            $original = $persister->load(['_id' => $identifier]);
+            $original = $persister->load([$classMetadata->identifier => $identifier]);
 
             if ($original === null) {
                 throw DocumentNotFoundException::documentNotFound(
@@ -214,7 +213,6 @@ EOPHP;
     {
         $skippedProperties = [];
         $class             = $this->dm->getClassMetadata($className);
-        $identifiers       = array_flip($class->getIdentifierFieldNames());
         $filter            = ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PRIVATE;
         $reflector         = $class->getReflectionClass();
 
