@@ -11,7 +11,7 @@ use Doctrine\ODM\MongoDB\Mapping\ClassMetadataFactoryInterface;
 use Doctrine\ODM\MongoDB\Mapping\MappingException;
 use Doctrine\ODM\MongoDB\Proxy\DefaultProxyClassNameResolver;
 use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
-use Doctrine\ODM\MongoDB\Proxy\LazyGhostProxyFactory;
+use Doctrine\ODM\MongoDB\Proxy\ProxyFactory;
 use Doctrine\ODM\MongoDB\Proxy\ProxyFactory;
 use Doctrine\ODM\MongoDB\Query\FilterCollection;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
@@ -179,7 +179,7 @@ class DocumentManager implements ObjectManager
 
         $this->unitOfWork        = new UnitOfWork($this, $this->eventManager, $this->hydratorFactory);
         $this->schemaManager     = new SchemaManager($this, $this->metadataFactory);
-        $this->proxyFactory      = new LazyGhostProxyFactory(
+        $this->proxyFactory      = new ProxyFactory(
             $this,
             $config->getProxyDir(),
             $config->getProxyNamespace(),
