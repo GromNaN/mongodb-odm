@@ -8,8 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ODM\MongoDB\DocumentNotFoundException;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
-use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
+use Doctrine\Persistence\Proxy;
 
 use function iterator_to_array;
 
@@ -58,11 +58,11 @@ class GH593Test extends BaseTestCase
          */
         self::assertCount(2, $user1following);
 
-        self::assertInstanceOf(InternalProxy::class, $user1following[0]);
+        self::assertInstanceOf(Proxy::class, $user1following[0]);
         self::assertFalse($this->uow->isUninitializedObject($user1following[0]));
         self::assertEquals($user2->getId(), $user1following[0]->getId());
 
-        self::assertInstanceOf(InternalProxy::class, $user1following[1]);
+        self::assertInstanceOf(Proxy::class, $user1following[1]);
         self::assertTrue($this->uow->isUninitializedObject($user1following[1]));
         self::assertEquals($user3->getId(), $user1following[1]->getId());
 

@@ -12,7 +12,6 @@ use Doctrine\ODM\MongoDB\Mapping\MappingException;
 use Doctrine\ODM\MongoDB\Proxy\DefaultProxyClassNameResolver;
 use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Proxy\ProxyFactory;
-use Doctrine\ODM\MongoDB\Proxy\ProxyFactory;
 use Doctrine\ODM\MongoDB\Query\FilterCollection;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\ODM\MongoDB\Repository\GridFSRepository;

@@ -12,6 +12,7 @@ use Doctrine\ODM\MongoDB\PersistentCollection;
 use Doctrine\ODM\MongoDB\PersistentCollection\PersistentCollectionInterface;
 use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Query\Query;
+use Doctrine\Persistence\Proxy;
 
 class HydratorTest extends BaseTestCase
 {
@@ -41,10 +42,10 @@ class HydratorTest extends BaseTestCase
         self::assertEquals('jon', $user->name);
         self::assertInstanceOf(DateTime::class, $user->birthdate);
         self::assertInstanceOf(HydrationClosureReferenceOne::class, $user->referenceOne);
-        self::assertInstanceOf(InternalProxy::class, $user->referenceOne);
+        self::assertInstanceOf(Proxy::class, $user->referenceOne);
         self::assertInstanceOf(PersistentCollection::class, $user->referenceMany);
-        self::assertInstanceOf(InternalProxy::class, $user->referenceMany[0]);
-        self::assertInstanceOf(InternalProxy::class, $user->referenceMany[1]);
+        self::assertInstanceOf(Proxy::class, $user->referenceMany[0]);
+        self::assertInstanceOf(Proxy::class, $user->referenceMany[1]);
         self::assertInstanceOf(HydrationClosureEmbedOne::class, $user->embedOne);
         self::assertInstanceOf(PersistentCollection::class, $user->embedMany);
         self::assertEquals('jon', $user->embedOne->name);

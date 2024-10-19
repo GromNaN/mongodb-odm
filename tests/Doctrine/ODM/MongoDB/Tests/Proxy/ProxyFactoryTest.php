@@ -17,9 +17,9 @@ use MongoDB\Collection;
 use MongoDB\Database;
 use PHPUnit\Framework\MockObject\MockObject;
 
-class LazyGhostProxyFactoryTest extends BaseTestCase
+class ProxyFactoryTest extends BaseTestCase
 {
-    /** @var Client|MockObject */
+    /** @var Client&MockObject */
     private Client $client;
 
     public function setUp(): void

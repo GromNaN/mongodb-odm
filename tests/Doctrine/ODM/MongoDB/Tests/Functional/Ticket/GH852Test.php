@@ -10,8 +10,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ODM\MongoDB\Iterator\Iterator;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
-use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
+use Doctrine\Persistence\Proxy;
 use MongoDB\BSON\Binary;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -49,7 +49,7 @@ class GH852Test extends BaseTestCase
         self::assertEquals($idGenerator('parent'), $parent->id);
         self::assertEquals('parent', $parent->name);
 
-        self::assertInstanceOf(InternalProxy::class, $parent->refOne);
+        self::assertInstanceOf(Proxy::class, $parent->refOne);
         self::assertInstanceOf(GH852Document::class, $parent->refOne);
         self::assertTrue($this->uow->isUninitializedObject($parent->refOne));
         self::assertEquals($idGenerator('childA'), $parent->refOne->id);
@@ -61,13 +61,13 @@ class GH852Test extends BaseTestCase
         /* These proxies will be initialized when we first access the collection
          * by DocumentPersister::loadReferenceManyCollectionOwningSide().
          */
-        self::assertInstanceOf(InternalProxy::class, $parent->refMany[0]);
+        self::assertInstanceOf(Proxy::class, $parent->refMany[0]);
         self::assertInstanceOf(GH852Document::class, $parent->refMany[0]);
         self::assertFalse($this->uow->isUninitializedObject($parent->refMany[0]));
         self::assertEquals($idGenerator('childB'), $parent->refMany[0]->id);
         self::assertEquals('childB', $parent->refMany[0]->name);
 
-        self::assertInstanceOf(InternalProxy::class, $parent->refMany[1]);
+        self::assertInstanceOf(Proxy::class, $parent->refMany[1]);
         self::assertInstanceOf(GH852Document::class, $parent->refMany[1]);
         self::assertFalse($this->uow->isUninitializedObject($parent->refMany[1]));
         self::assertEquals($idGenerator('childC'), $parent->refMany[1]->id);

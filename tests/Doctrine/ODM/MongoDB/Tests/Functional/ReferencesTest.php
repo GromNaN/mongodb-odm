@@ -12,8 +12,8 @@ use Doctrine\ODM\MongoDB\Iterator\Iterator;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Doctrine\ODM\MongoDB\PersistentCollection;
 use Doctrine\ODM\MongoDB\PersistentCollection\PersistentCollectionInterface;
-use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
+use Doctrine\Persistence\Proxy;
 use Documents\Account;
 use Documents\Address;
 use Documents\Group;
@@ -81,7 +81,7 @@ class ReferencesTest extends BaseTestCase
         assert($profile instanceof Profile);
 
         self::assertInstanceOf(Profile::class, $profile);
-        self::assertInstanceOf(InternalProxy::class, $profile);
+        self::assertInstanceOf(Proxy::class, $profile);
 
         $profile->getFirstName();
 
@@ -103,7 +103,7 @@ class ReferencesTest extends BaseTestCase
 
         $user    = $this->dm->find($user::class, $user->getId());
         $profile = $user->getProfileNotify();
-        self::assertInstanceOf(InternalProxy::class, $profile);
+        self::assertInstanceOf(Proxy::class, $profile);
         self::assertTrue($this->uow->isUninitializedObject($profile));
 
         $user->getProfileNotify()->setLastName('Malarz');
@@ -395,7 +395,7 @@ class ReferencesTest extends BaseTestCase
         );
 
         $test = $this->dm->find($test::class, $test->id);
-        self::assertInstanceOf(InternalProxy::class, $test->referenceOne);
+        self::assertInstanceOf(Proxy::class, $test->referenceOne);
         $this->expectException(DocumentNotFoundException::class);
         $this->expectExceptionMessage(
             'The "Doctrine\ODM\MongoDB\Tests\Functional\DocumentWithArrayId" document with identifier ' .
@@ -428,7 +428,7 @@ class ReferencesTest extends BaseTestCase
 
         $user    = $this->dm->find($user::class, $user->getId());
         $profile = $user->getProfile();
-        self::assertInstanceOf(InternalProxy::class, $profile);
+        self::assertInstanceOf(Proxy::class, $profile);
         $this->expectException(DocumentNotFoundException::class);
         $this->expectExceptionMessage(
             'The "Documents\Profile" document with identifier "abcdefabcdefabcdefabcdef" could not be found.',
@@ -459,7 +459,7 @@ class ReferencesTest extends BaseTestCase
         );
 
         $test = $this->dm->find($test::class, $test->id);
-        self::assertInstanceOf(InternalProxy::class, $test->referenceOne);
+        self::assertInstanceOf(Proxy::class, $test->referenceOne);
         $this->expectException(DocumentNotFoundException::class);
         $this->expectExceptionMessage(
             'The "Doctrine\ODM\MongoDB\Tests\Functional\DocumentWithMongoBinDataId" document with identifier ' .
@@ -501,7 +501,7 @@ class ReferencesTest extends BaseTestCase
 
         $this->dm->getEventManager()->addEventListener(Events::documentNotFound, new DocumentNotFoundListener($closure));
 
-        self::assertInstanceOf(InternalProxy::class, $profile);
+        self::assertInstanceOf(Proxy::class, $profile);
         $this->expectException(DocumentNotFoundException::class);
         $this->expectExceptionMessage(
             'The "Documents\Profile" document with identifier ' .

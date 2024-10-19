@@ -8,12 +8,12 @@ use Doctrine\ODM\MongoDB\Events;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Doctrine\ODM\MongoDB\Mapping\MappingException;
-use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use Doctrine\ODM\MongoDB\Tests\ClassMetadataTestUtil;
 use Doctrine\ODM\MongoDB\Types\Type;
 use Doctrine\ODM\MongoDB\Utility\CollectionHelper;
+use Doctrine\Persistence\Proxy;
 use Doctrine\Persistence\Reflection\EnumReflectionProperty;
 use DoctrineGlobal_Article;
 use DoctrineGlobal_User;
@@ -493,7 +493,7 @@ class ClassMetadataTest extends BaseTestCase
         $metadata = $this->dm->getClassMetadata(Album::class);
 
         self::assertEquals($document->getName(), $metadata->getFieldValue($proxy, 'name'));
-        self::assertInstanceOf(InternalProxy::class, $proxy);
+        self::assertInstanceOf(Proxy::class, $proxy);
         self::assertFalse($this->uow->isUninitializedObject($proxy));
     }
 
@@ -508,7 +508,7 @@ class ClassMetadataTest extends BaseTestCase
         $metadata = $this->dm->getClassMetadata(Album::class);
 
         self::assertEquals($document->getId(), $metadata->getFieldValue($proxy, 'id'));
-        self::assertInstanceOf(InternalProxy::class, $proxy);
+        self::assertInstanceOf(Proxy::class, $proxy);
         self::assertTrue($this->uow->isUninitializedObject($proxy));
     }
 
@@ -530,7 +530,7 @@ class ClassMetadataTest extends BaseTestCase
         $this->dm->clear();
 
         $proxy = $this->dm->getReference(Album::class, $document->getId());
-        self::assertInstanceOf(InternalProxy::class, $proxy);
+        self::assertInstanceOf(Proxy::class, $proxy);
 
         $metadata = $this->dm->getClassMetadata(Album::class);
         $metadata->setFieldValue($proxy, 'name', 'nevermind');
@@ -539,7 +539,7 @@ class ClassMetadataTest extends BaseTestCase
         $this->dm->clear();
 
         $proxy = $this->dm->getReference(Album::class, $document->getId());
-        self::assertInstanceOf(InternalProxy::class, $proxy);
+        self::assertInstanceOf(Proxy::class, $proxy);
         self::assertInstanceOf(Album::class, $proxy);
 
         self::assertEquals('nevermind', $proxy->getName());

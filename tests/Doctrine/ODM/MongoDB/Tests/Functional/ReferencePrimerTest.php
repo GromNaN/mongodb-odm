@@ -7,10 +7,10 @@ namespace Doctrine\ODM\MongoDB\Tests\Functional;
 use DateTime;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
-use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use Doctrine\ODM\MongoDB\Tests\ClassMetadataTestUtil;
+use Doctrine\Persistence\Proxy;
 use Documents\Account;
 use Documents\Agent;
 use Documents\BlogPost;
@@ -95,7 +95,7 @@ class ReferencePrimerTest extends BaseTestCase
             ->field('groups')->prime(true);
 
         foreach ($qb->getQuery() as $user) {
-            self::assertInstanceOf(InternalProxy::class, $user->getAccount());
+            self::assertInstanceOf(Proxy::class, $user->getAccount());
             self::assertFalse($this->uow->isUninitializedObject($user->getAccount()));
 
             self::assertCount(2, $user->getGroups());
@@ -104,7 +104,7 @@ class ReferencePrimerTest extends BaseTestCase
              * initialized, they will not be hydrated as proxy objects.
              */
             foreach ($user->getGroups() as $group) {
-                self::assertNotInstanceOf(InternalProxy::class, $group);
+                self::assertNotInstanceOf(Proxy::class, $group);
                 self::assertInstanceOf(Group::class, $group);
             }
         }
@@ -133,13 +133,13 @@ class ReferencePrimerTest extends BaseTestCase
             ->field('users')->prime(true);
 
         foreach ($qb->getQuery() as $simpleUser) {
-            self::assertInstanceOf(InternalProxy::class, $simpleUser->getUser());
+            self::assertInstanceOf(Proxy::class, $simpleUser->getUser());
             self::assertFalse($this->uow->isUninitializedObject($simpleUser->getUser()));
 
             self::assertCount(2, $simpleUser->getUsers());
 
             foreach ($simpleUser->getUsers() as $user) {
-                self::assertNotInstanceOf(InternalProxy::class, $user);
+                self::assertNotInstanceOf(Proxy::class, $user);
                 self::assertInstanceOf(User::class, $user);
             }
         }
@@ -188,20 +188,20 @@ class ReferencePrimerTest extends BaseTestCase
             ->field('embeddedDocs.referencedDocs')->prime(true);
 
         foreach ($qb->getQuery() as $root) {
-            self::assertNotInstanceOf(InternalProxy::class, $root->embeddedDoc);
+            self::assertNotInstanceOf(Proxy::class, $root->embeddedDoc);
             self::assertInstanceOf(EmbeddedWhichReferences::class, $root->embeddedDoc);
 
             self::assertCount(2, $root->embeddedDocs);
             foreach ($root->embeddedDocs as $embeddedDoc) {
-                self::assertNotInstanceOf(InternalProxy::class, $embeddedDoc);
+                self::assertNotInstanceOf(Proxy::class, $embeddedDoc);
                 self::assertInstanceOf(EmbeddedWhichReferences::class, $embeddedDoc);
 
-                self::assertInstanceOf(InternalProxy::class, $embeddedDoc->referencedDoc);
+                self::assertInstanceOf(Proxy::class, $embeddedDoc->referencedDoc);
                 self::assertFalse($this->uow->isUninitializedObject($embeddedDoc->referencedDoc));
 
                 self::assertCount(2, $embeddedDoc->referencedDocs);
                 foreach ($embeddedDoc->referencedDocs as $referencedDoc) {
-                    self::assertNotInstanceOf(InternalProxy::class, $referencedDoc);
+                    self::assertNotInstanceOf(Proxy::class, $referencedDoc);
                     self::assertInstanceOf(Reference::class, $referencedDoc);
                 }
             }
@@ -252,37 +252,37 @@ class ReferencePrimerTest extends BaseTestCase
             assert($referenceUser instanceof ReferenceUser);
             $user = $referenceUser->getUser();
             self::assertInstanceOf(User::class, $user);
-            self::assertInstanceOf(InternalProxy::class, $user);
+            self::assertInstanceOf(Proxy::class, $user);
             self::assertFalse($this->uow->isUninitializedObject($user));
 
             self::assertCount(1, $referenceUser->getUsers());
 
             foreach ($referenceUser->getUsers() as $user) {
-                self::assertNotInstanceOf(InternalProxy::class, $user);
+                self::assertNotInstanceOf(Proxy::class, $user);
                 self::assertInstanceOf(User::class, $user);
             }
 
             $parentUser = $referenceUser->getParentUser();
-            self::assertInstanceOf(InternalProxy::class, $parentUser);
+            self::assertInstanceOf(Proxy::class, $parentUser);
             self::assertInstanceOf(User::class, $parentUser);
             self::assertFalse($this->uow->isUninitializedObject($parentUser));
 
             self::assertCount(1, $referenceUser->getParentUsers());
 
             foreach ($referenceUser->getParentUsers() as $user) {
-                self::assertNotInstanceOf(InternalProxy::class, $user);
+                self::assertNotInstanceOf(Proxy::class, $user);
                 self::assertInstanceOf(User::class, $user);
             }
 
             $otherUser = $referenceUser->getOtherUser();
             self::assertInstanceOf(User::class, $otherUser);
-            self::assertInstanceOf(InternalProxy::class, $otherUser);
+            self::assertInstanceOf(Proxy::class, $otherUser);
             self::assertFalse($this->uow->isUninitializedObject($otherUser));
 
             self::assertCount(1, $referenceUser->getOtherUsers());
 
             foreach ($referenceUser->getOtherUsers() as $user) {
-                self::assertNotInstanceOf(InternalProxy::class, $user);
+                self::assertNotInstanceOf(Proxy::class, $user);
                 self::assertInstanceOf(User::class, $user);
             }
         }
@@ -309,10 +309,10 @@ class ReferencePrimerTest extends BaseTestCase
         foreach ($qb->getQuery() as $user) {
             $favorites = $user->getFavorites()->toArray();
 
-            self::assertNotInstanceOf(InternalProxy::class, $favorites[0]);
+            self::assertNotInstanceOf(Proxy::class, $favorites[0]);
             self::assertInstanceOf(Group::class, $favorites[0]);
 
-            self::assertNotInstanceOf(InternalProxy::class, $favorites[1]);
+            self::assertNotInstanceOf(Proxy::class, $favorites[1]);
             self::assertInstanceOf(Project::class, $favorites[1]);
         }
     }
@@ -331,7 +331,7 @@ class ReferencePrimerTest extends BaseTestCase
             ->field('server')->prime(true);
 
         foreach ($qb->getQuery() as $agent) {
-            self::assertInstanceOf(InternalProxy::class, $agent->server);
+            self::assertInstanceOf(Proxy::class, $agent->server);
             self::assertFalse($this->uow->isUninitializedObject($agent->server));
         }
     }
@@ -360,7 +360,7 @@ class ReferencePrimerTest extends BaseTestCase
             self::assertCount(2, $user->getGroups());
 
             foreach ($user->getGroups() as $group) {
-                self::assertNotInstanceOf(InternalProxy::class, $group);
+                self::assertNotInstanceOf(Proxy::class, $group);
                 self::assertInstanceOf(Group::class, $group);
             }
         }
@@ -440,7 +440,7 @@ class ReferencePrimerTest extends BaseTestCase
         self::assertCount(1, $user->getGroups());
 
         foreach ($user->getGroups() as $group) {
-            self::assertNotInstanceOf(InternalProxy::class, $group);
+            self::assertNotInstanceOf(Proxy::class, $group);
             self::assertInstanceOf(Group::class, $group);
         }
     }
@@ -472,7 +472,7 @@ class ReferencePrimerTest extends BaseTestCase
 
         $phonenumber = $phonenumbers->current();
 
-        self::assertNotInstanceOf(InternalProxy::class, $phonenumber);
+        self::assertNotInstanceOf(Proxy::class, $phonenumber);
         self::assertInstanceOf(Phonenumber::class, $phonenumber);
     }
 
@@ -523,7 +523,7 @@ class ReferencePrimerTest extends BaseTestCase
 
         $currency = $money->getCurrency();
 
-        self::assertInstanceOf(InternalProxy::class, $currency);
+        self::assertInstanceOf(Proxy::class, $currency);
         self::assertInstanceOf(Currency::class, $currency);
         self::assertFalse($this->uow->isUninitializedObject($currency));
     }
@@ -551,7 +551,7 @@ class ReferencePrimerTest extends BaseTestCase
         self::assertInstanceOf(BlogPost::class, $post);
 
         $comment = $post->comments->first();
-        self::assertInstanceOf(InternalProxy::class, $comment->author);
+        self::assertInstanceOf(Proxy::class, $comment->author);
         self::assertFalse($this->uow->isUninitializedObject($comment->author));
     }
 
@@ -578,7 +578,7 @@ class ReferencePrimerTest extends BaseTestCase
         self::assertInstanceOf(BlogPost::class, $post);
 
         $comment = $post->repoCommentsWithPrimer->first();
-        self::assertInstanceOf(InternalProxy::class, $comment->author);
+        self::assertInstanceOf(Proxy::class, $comment->author);
         self::assertFalse($this->uow->isUninitializedObject($comment->author));
     }
 }
