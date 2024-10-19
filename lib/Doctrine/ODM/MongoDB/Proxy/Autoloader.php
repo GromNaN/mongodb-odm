@@ -10,6 +10,7 @@ use Doctrine\ODM\MongoDB\InvalidArgumentException;
 use function file_exists;
 use function ltrim;
 use function spl_autoload_register;
+use function sprintf;
 use function str_replace;
 use function str_starts_with;
 use function strlen;
@@ -38,7 +39,7 @@ final class Autoloader
     public static function resolveFile(string $proxyDir, string $proxyNamespace, string $className): string
     {
         if (! str_starts_with($className, $proxyNamespace)) {
-            throw InvalidArgumentException::notAProxyClass($className, $proxyNamespace);
+            throw new InvalidArgumentException(sprintf('The class %s is not a proxy class in namespace %s', $className, $proxyNamespace));
         }
 
         // remove proxy namespace from class name

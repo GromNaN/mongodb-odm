@@ -7,11 +7,11 @@ namespace Doctrine\ODM\MongoDB\Proxy;
 use Closure;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\DocumentNotFoundException;
-use Doctrine\ODM\MongoDB\InvalidArgumentException;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Doctrine\ODM\MongoDB\Persisters\DocumentPersister;
 use Doctrine\ODM\MongoDB\UnitOfWork;
 use Doctrine\Persistence\Proxy;
+use InvalidArgumentException;
 use ReflectionProperty;
 use Symfony\Component\VarExporter\ProxyHelper;
 
@@ -24,9 +24,11 @@ use function dirname;
 use function file_exists;
 use function file_put_contents;
 use function filemtime;
+use function get_debug_type;
 use function is_bool;
 use function is_dir;
 use function is_int;
+use function is_scalar;
 use function is_writable;
 use function ltrim;
 use function mkdir;
@@ -34,6 +36,7 @@ use function preg_match_all;
 use function random_bytes;
 use function rename;
 use function rtrim;
+use function sprintf;
 use function str_replace;
 use function strpos;
 use function strrpos;
@@ -137,15 +140,15 @@ EOPHP;
         bool|int $autoGenerate = self::AUTOGENERATE_NEVER,
     ) {
         if (! $proxyDir) {
-            throw InvalidArgumentException::proxyDirectoryRequired();
+            throw new InvalidArgumentException('You must configure a proxy directory. See docs for details');
         }
 
         if (! $proxyNs) {
-            throw InvalidArgumentException::proxyNamespaceRequired();
+            throw new InvalidArgumentException('You must configure a proxy namespace');
         }
 
         if (is_int($autoGenerate) ? $autoGenerate < 0 || $autoGenerate > 4 : ! is_bool($autoGenerate)) {
-            throw InvalidArgumentException::invalidAutoGenerateMode($autoGenerate);
+            throw new InvalidArgumentException(sprintf('Invalid auto generate mode "%s" given.', is_scalar($autoGenerate) ? (string) $autoGenerate : get_debug_type($autoGenerate)));
         }
 
         $this->uow          = $dm->getUnitOfWork();
@@ -354,12 +357,8 @@ EOPHP;
 
         $parentDirectory = dirname($fileName);
 
-        if (! is_dir($parentDirectory) && ! @mkdir($parentDirectory, 0775, true)) {
-            throw InvalidArgumentException::proxyDirectoryNotWritable($this->proxyDir);
-        }
-
-        if (! is_writable($parentDirectory)) {
-            throw InvalidArgumentException::proxyDirectoryNotWritable($this->proxyDir);
+        if (! is_dir($parentDirectory) && ! @mkdir($parentDirectory, 0775, true) || ! is_writable($parentDirectory)) {
+            throw new InvalidArgumentException(sprintf('Your proxy directory "%s" must be writable', $this->proxyDir));
         }
 
         $tmpFileName = $fileName . '.' . bin2hex(random_bytes(12));
