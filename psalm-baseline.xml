@@ -160,10 +160,37 @@
       <code><![CDATA[array_values]]></code>
     </RedundantFunctionCall>
   </file>
-  <file src="lib/Doctrine/ODM/MongoDB/Proxy/Resolver/ProxyManagerClassNameResolver.php">
-    <MoreSpecificImplementedParamType>
-      <code><![CDATA[$className]]></code>
-    </MoreSpecificImplementedParamType>
+  <file src="lib/Doctrine/ODM/MongoDB/Proxy/ProxyFactory.php">
+    <InvalidArgument>
+      <code><![CDATA[$object]]></code>
+    </InvalidArgument>
+    <InvalidCast>
+      <code><![CDATA[$autoGenerate]]></code>
+    </InvalidCast>
+    <InvalidNullableReturnType>
+      <code><![CDATA[Closure]]></code>
+    </InvalidNullableReturnType>
+    <InvalidPropertyAssignmentValue>
+      <code><![CDATA[$this->proxyFactories]]></code>
+    </InvalidPropertyAssignmentValue>
+    <NullableReturnStatement>
+      <code><![CDATA[$this->proxyFactories[$className] = $proxyFactory]]></code>
+    </NullableReturnStatement>
+    <RedundantCondition>
+      <code><![CDATA[get_debug_type($autoGenerate)]]></code>
+    </RedundantCondition>
+    <TypeDoesNotContainType>
+      <code><![CDATA[$autoGenerate < 0]]></code>
+      <code><![CDATA[$autoGenerate > 4]]></code>
+      <code><![CDATA[is_int($autoGenerate) && ($autoGenerate < 0 || $autoGenerate > 4)]]></code>
+      <code><![CDATA[is_int($autoGenerate) && ($autoGenerate < 0 || $autoGenerate > 4)]]></code>
+      <code><![CDATA[is_scalar($autoGenerate)]]></code>
+    </TypeDoesNotContainType>
+    <UndefinedMethod>
+      <code><![CDATA[self::createLazyGhost(static function (InternalProxy $object) use ($initializer, $identifier): void {
+                $initializer($object, $identifier);
+            }, $skippedProperties)]]></code>
+    </UndefinedMethod>
   </file>
   <file src="lib/Doctrine/ODM/MongoDB/Query/Builder.php">
     <InvalidPropertyAssignmentValue>
