@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Doctrine\ODM\MongoDB\Proxy;
 
 use Closure;
-use Doctrine\ODM\MongoDB\InvalidArgumentException;
+use InvalidArgumentException;
 
 use function file_exists;
 use function ltrim;
