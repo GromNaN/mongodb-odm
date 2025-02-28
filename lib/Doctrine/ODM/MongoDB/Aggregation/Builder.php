@@ -254,6 +254,10 @@ class Builder
     {
         $class = $this->hydrationClass ? $this->dm->getClassMetadata($this->hydrationClass) : null;
 
+        if ($this->hydrationClass) {
+            $options['typeMap'] = DocumentManager::HYDRATION_TYPEMAP;
+        }
+
         return new Aggregation($this->dm, $class, $this->collection, $this->getPipeline(), $options, $this->rewindable);
     }
 

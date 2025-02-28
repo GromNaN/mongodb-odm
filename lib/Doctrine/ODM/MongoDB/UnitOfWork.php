@@ -25,6 +25,7 @@ use Doctrine\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\Persistence\NotifyPropertyChanged;
 use Doctrine\Persistence\PropertyChangedListener;
 use InvalidArgumentException;
+use MongoDB\BSON\Document;
 use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\Session;
 use MongoDB\Driver\WriteConcern;
@@ -2738,14 +2739,14 @@ final class UnitOfWork implements PropertyChangedListener
      *
      * @template T of object
      */
-    public function getOrCreateDocument(string $className, array $data, array &$hints = [], ?object $document = null): object
+    public function getOrCreateDocument(string $className, Document $data, array &$hints = [], ?object $document = null): object
     {
         $class = $this->dm->getClassMetadata($className);
 
         // @TODO figure out how to remove this
         $discriminatorValue = null;
-        if (isset($class->discriminatorField, $data[$class->discriminatorField])) {
-            $discriminatorValue = $data[$class->discriminatorField];
+        if (isset($class->discriminatorField) && $data->has($class->discriminatorField)) {
+            $discriminatorValue = $data->get($class->discriminatorField);
         } elseif (isset($class->defaultDiscriminatorValue)) {
             $discriminatorValue = $class->defaultDiscriminatorValue;
         }
@@ -2756,7 +2757,8 @@ final class UnitOfWork implements PropertyChangedListener
 
             $class = $this->dm->getClassMetadata($className);
 
-            unset($data[$class->discriminatorField]);
+            // @todo we cannot unset a property of the BSON document. Is it really necessary?
+            //unset($data[$class->discriminatorField]);
         }
 
         if (! empty($hints[Query::HINT_READ_ONLY])) {
@@ -2771,7 +2773,7 @@ final class UnitOfWork implements PropertyChangedListener
         $serializedId    = null;
         $id              = null;
         if (! $class->isQueryResultDocument) {
-            $id              = $class->getDatabaseIdentifierValue($data['_id']);
+            $id              = $class->getDatabaseIdentifierValue($data->get('_id'));
             $serializedId    = serialize($id);
             $isManagedObject = isset($this->identityMap[$class->name][$serializedId]);
         }
@@ -2944,7 +2946,7 @@ final class UnitOfWork implements PropertyChangedListener
      * @param mixed                $id   The identifier values.
      * @param array<string, mixed> $data
      */
-    public function registerManaged(object $document, $id, array $data): void
+    public function registerManaged(object $document, $id, Document|array $data): void
     {
         $oid   = spl_object_hash($document);
         $class = $this->dm->getClassMetadata($document::class);
@@ -2956,7 +2958,7 @@ final class UnitOfWork implements PropertyChangedListener
         }
 
         $this->documentStates[$oid]       = self::STATE_MANAGED;
-        $this->originalDocumentData[$oid] = $data;
+        $this->originalDocumentData[$oid] = is_array($data) ? $data : $data->toPHP(['root' => 'array']);
         $this->addToIdentityMap($document);
     }
 

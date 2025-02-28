@@ -30,7 +30,9 @@ use Doctrine\ODM\MongoDB\Utility\CollectionHelper;
 use Doctrine\Persistence\Mapping\MappingException;
 use InvalidArgumentException;
 use Iterator as SplIterator;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\PackedArray;
 use MongoDB\Collection;
 use MongoDB\Driver\CursorInterface;
 use MongoDB\Driver\Exception\Exception as DriverException;
@@ -53,8 +55,8 @@ use function array_values;
 use function assert;
 use function count;
 use function explode;
+use function get_debug_type;
 use function get_object_vars;
-use function gettype;
 use function implode;
 use function in_array;
 use function is_array;
@@ -454,12 +456,12 @@ final class DocumentPersister
     {
         assert($this->collection instanceof Collection);
         $query = $this->getQueryForDocument($document);
-        $data  = $this->collection->findOne($query);
+        $data  = $this->collection->findOne($query, ['typeMap' => DocumentManager::HYDRATION_TYPEMAP]);
         if ($data === null) {
             throw MongoDBException::cannotRefreshDocument();
         }
 
-        $data = $this->hydratorFactory->hydrate($document, (array) $data);
+        $data = $this->hydratorFactory->hydrate($document, $data);
         $this->uow->setOriginalDocumentData($document, $data);
     }
 
@@ -493,14 +495,14 @@ final class DocumentPersister
         $criteria = $this->addDiscriminatorToPreparedQuery($criteria);
         $criteria = $this->addFilterToPreparedQuery($criteria);
 
-        $options = [];
+        $options            = [];
+        $options['typeMap'] = DocumentManager::HYDRATION_TYPEMAP;
         if ($sort !== null) {
             $options['sort'] = $this->prepareSort($sort);
         }
 
         assert($this->collection instanceof Collection);
         $result = $this->collection->findOne($criteria, $options);
-        $result = $result !== null ? (array) $result : null;
 
         if ($this->class->isLockable) {
             $lockMapping = $this->class->fieldMappings[$this->class->lockField];
@@ -540,6 +542,8 @@ final class DocumentPersister
         if ($skip !== null) {
             $options['skip'] = $skip;
         }
+
+        $options['typeMap'] = DocumentManager::HYDRATION_TYPEMAP;
 
         assert($this->collection instanceof Collection);
         $baseCursor = $this->collection->find($criteria, $options);
@@ -644,7 +648,7 @@ final class DocumentPersister
      * @return object The filled and managed document object.
      * @phpstan-return T
      */
-    private function createDocument(array $result, ?object $document = null, array $hints = []): object
+    private function createDocument(Document $result, ?object $document = null, array $hints = []): object
     {
         if ($document !== null) {
             $hints[Query::HINT_REFRESH] = true;
@@ -700,8 +704,8 @@ final class DocumentPersister
             $embeddedMetadata       = $this->dm->getClassMetadata($className);
             $embeddedDocumentObject = $embeddedMetadata->newInstance();
 
-            if (! is_array($embeddedDocument)) {
-                throw HydratorException::associationItemTypeMismatch($owner::class, $mapping['name'], $key, 'array', gettype($embeddedDocument));
+            if (! $embeddedDocument instanceof Document) {
+                throw HydratorException::associationItemTypeMismatch($owner::class, $mapping['name'], $key, Document::class, get_debug_type($embeddedDocument));
             }
 
             $this->uow->setParentAssociation($embeddedDocumentObject, $mapping, $owner, $mapping['name'] . '.' . $key);
@@ -735,10 +739,14 @@ final class DocumentPersister
         $sorted = isset($mapping['sort']) && $mapping['sort'];
 
         foreach ($collection->getMongoData() as $key => $reference) {
+            if ($reference instanceof Document || $reference instanceof PackedArray) {
+                $reference = $reference->toPHP(DocumentManager::CLIENT_TYPEMAP);
+            }
+
             $className = $this->dm->getClassNameForAssociation($mapping, $reference);
 
             if ($mapping['storeAs'] !== ClassMetadata::REFERENCE_STORE_AS_ID && ! is_array($reference)) {
-                throw HydratorException::associationItemTypeMismatch($owner::class, $mapping['name'], $key, 'array', gettype($reference));
+                throw HydratorException::associationItemTypeMismatch($owner::class, $mapping['name'], $key, 'array', get_debug_type($reference));
             }
 
             $identifier = ClassMetadata::getReferenceId($reference, $mapping['storeAs']);
@@ -791,10 +799,17 @@ final class DocumentPersister
                 $options['readPreference'] = $hints[Query::HINT_READ_PREFERENCE];
             }
 
+            $options['typeMap'] = DocumentManager::HYDRATION_TYPEMAP;
+
             $cursor    = $mongoCollection->find($criteria, $options);
             $documents = $cursor->toArray();
             foreach ($documents as $documentData) {
-                $document = $this->uow->getById($documentData['_id'], $class);
+                $id = $documentData['_id'];
+                if ($id instanceof Document || $id instanceof PackedArray) {
+                    $id = $id->toPHP(DocumentManager::CLIENT_TYPEMAP);
+                }
+
+                $document = $this->uow->getById($id, $class);
                 if ($this->uow->isUninitializedObject($document)) {
                     $data = $this->hydratorFactory->hydrate($document, $documentData);
                     $this->uow->setOriginalDocumentData($document, $data);

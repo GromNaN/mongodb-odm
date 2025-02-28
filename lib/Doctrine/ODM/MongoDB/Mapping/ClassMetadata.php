@@ -11,6 +11,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Instantiator\Instantiator;
 use Doctrine\Instantiator\InstantiatorInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Id\IdGenerator;
 use Doctrine\ODM\MongoDB\LockException;
 use Doctrine\ODM\MongoDB\Mapping\Annotations\TimeSeries;
@@ -25,6 +26,8 @@ use Doctrine\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\Persistence\Reflection\EnumReflectionProperty;
 use InvalidArgumentException;
 use LogicException;
+use MongoDB\BSON\Document;
+use MongoDB\BSON\PackedArray;
 use ProxyManager\Proxy\GhostObjectInterface;
 use ReflectionClass;
 use ReflectionEnum;
@@ -1824,6 +1827,10 @@ use function trigger_deprecation;
     public function getPHPIdentifierValue($id)
     {
         $idType = $this->fieldMappings[$this->identifier]['type'];
+
+        if ($id instanceof Document || $id instanceof PackedArray) {
+            $id = $id->toPHP(DocumentManager::CLIENT_TYPEMAP);
+        }
 
         return Type::getType($idType)->convertToPHPValue($id);
     }

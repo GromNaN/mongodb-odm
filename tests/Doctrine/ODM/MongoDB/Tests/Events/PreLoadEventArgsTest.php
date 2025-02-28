@@ -7,6 +7,7 @@ namespace Doctrine\ODM\MongoDB\Tests\Events;
 use Doctrine\ODM\MongoDB\Event\PreLoadEventArgs;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use Documents\Group;
+use MongoDB\BSON\Document;
 
 class PreLoadEventArgsTest extends BaseTestCase
 {
@@ -14,7 +15,7 @@ class PreLoadEventArgsTest extends BaseTestCase
     {
         $document = new Group('test');
         $dm       = $this->dm;
-        $data     = ['id' => '1234', 'name' => 'test'];
+        $data     = Document::fromPHP(['id' => '1234', 'name' => 'test']);
 
         $eventArgs     = new PreLoadEventArgs($document, $dm, $data);
         $eventArgsData =& $eventArgs->getData();
@@ -22,7 +23,8 @@ class PreLoadEventArgsTest extends BaseTestCase
         self::assertEquals('test', $eventArgsData['name']);
 
         $eventArgsData['name'] = 'alt name';
+        unset($eventArgs);
 
-        self::assertEquals('alt name', $data['name']);
+        self::assertEquals('alt name', $data->get('name'));
     }
 }
