@@ -708,6 +708,10 @@ class Builder
             $query['readPreference'] = new ReadPreference($this->class->readPreference, $this->class->readPreferenceTags);
         }
 
+        if ($this->hydrate) {
+            $options['typeMap'] = DocumentManager::HYDRATION_TYPEMAP;
+        }
+
         return new Query(
             $this->dm,
             $this->class,

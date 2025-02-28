@@ -8,6 +8,7 @@ use Doctrine\ODM\MongoDB\Iterator\HydratingIterator;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use Documents\User;
 use Generator;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectId;
 
 use function is_array;
@@ -57,9 +58,9 @@ final class HydratingIteratorTest extends BaseTestCase
     {
         if (! is_array($items)) {
             $items = [
-                ['_id' => new ObjectId(), 'username' => 'foo', 'hits' => 1],
-                ['_id' => new ObjectId(), 'username' => 'bar', 'hits' => 2],
-                ['_id' => new ObjectId(), 'username' => 'baz', 'hits' => 3],
+                Document::fromPHP(['_id' => new ObjectId(), 'username' => 'foo', 'hits' => 1]),
+                Document::fromPHP(['_id' => new ObjectId(), 'username' => 'bar', 'hits' => 2]),
+                Document::fromPHP(['_id' => new ObjectId(), 'username' => 'baz', 'hits' => 3]),
             ];
         }
 

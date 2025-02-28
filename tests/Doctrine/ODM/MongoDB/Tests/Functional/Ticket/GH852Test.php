@@ -12,6 +12,7 @@ use Doctrine\ODM\MongoDB\Iterator\Iterator;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use MongoDB\BSON\Binary;
+use MongoDB\BSON\Document;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class GH852Test extends BaseTestCase

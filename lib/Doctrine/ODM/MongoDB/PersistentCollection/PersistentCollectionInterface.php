@@ -9,6 +9,8 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\MongoDBException;
 use Doctrine\ODM\MongoDB\UnitOfWork;
 use Doctrine\Persistence\Mapping\ClassMetadata;
+use MongoDB\BSON\Document;
+use MongoDB\BSON\PackedArray;
 
 /**
  * Interface for persistent collection classes.
@@ -34,16 +36,14 @@ interface PersistentCollectionInterface extends Collection
     /**
      * Sets the array of raw mongo data that will be used to initialize this collection.
      *
-     * @param mixed[] $mongoData
-     *
      * @return void
      */
-    public function setMongoData(array $mongoData);
+    public function setMongoData(Document|PackedArray $mongoData);
 
     /**
      * Gets the array of raw mongo data that will be used to initialize this collection.
      *
-     * @return mixed[] $mongoData
+     * @return Document|PackedArray|null $mongoData
      */
     public function getMongoData();
 

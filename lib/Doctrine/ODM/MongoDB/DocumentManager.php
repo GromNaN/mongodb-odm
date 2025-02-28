@@ -57,7 +57,15 @@ use function trigger_deprecation;
  */
 class DocumentManager implements ObjectManager
 {
+    /**
+     * TypeMap by default
+     */
     public const CLIENT_TYPEMAP = ['root' => 'array', 'document' => 'array'];
+
+    /**
+     * TypeMap when result is hydrated
+     */
+    public const HYDRATION_TYPEMAP = ['root' => 'bson', 'document' => 'bson', 'array' => 'bson'];
 
     /**
      * The Doctrine MongoDB connection instance.

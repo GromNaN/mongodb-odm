@@ -12,6 +12,7 @@ use Doctrine\ODM\MongoDB\MongoDBException;
 use Doctrine\ODM\MongoDB\PersistentCollection;
 use Documents\User;
 use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\PackedArray;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use stdClass;
@@ -86,7 +87,7 @@ class PersistentCollectionTest extends BaseTestCase
 
     public function testMongoDataIsPreservedDuringSerialization(): void
     {
-        $mongoData = [
+        $mongoData = PackedArray::fromPHP([
             [
                 '$ref' => 'group',
                 '$id' => new ObjectId(),
@@ -95,7 +96,7 @@ class PersistentCollectionTest extends BaseTestCase
                 '$ref' => 'group',
                 '$id' => new ObjectId(),
             ],
-        ];
+        ]);
 
         $collection = new PersistentCollection(new ArrayCollection(), $this->dm, $this->uow);
         $collection->setMongoData($mongoData);

@@ -14,9 +14,9 @@ use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Doctrine\ODM\MongoDB\Proxy\InternalProxy;
 use Doctrine\ODM\MongoDB\Types\Type;
 use Doctrine\ODM\MongoDB\UnitOfWork;
+use MongoDB\BSON\Document;
 use ProxyManager\Proxy\GhostObjectInterface;
 
-use function array_key_exists;
 use function chmod;
 use function class_exists;
 use function dirname;
@@ -169,8 +169,11 @@ final class HydratorFactory
                         <<<EOF
 
         // AlsoLoad("$name")
-        if (! array_key_exists('%1\$s', \$data) && array_key_exists('$name', \$data)) {
+        if (! \$data->has('%1\$s') && \$data->has('$name')) {
+            // @todo extracting and repacking is not very efficient
+            \$data = \$data->toPHP(['root' => 'array', 'document' => 'bson', 'array' => 'bson']);
             \$data['%1\$s'] = \$data['$name'];
+            \$data = Document::fromPHP(\$data);
         }
 
 EOF
@@ -203,8 +206,11 @@ EOF
                     <<<EOF
 
         // Field(type: "{$mapping['type']}")
-        if (isset(\$data['%1\$s']) || (! empty(\$this->class->fieldMappings['%2\$s']['nullable']) && array_key_exists('%1\$s', \$data))) {
-            \$value = \$data['%1\$s'];
+        if (\$data->has('%1\$s') || (! empty(\$this->class->fieldMappings['%2\$s']['nullable']) && \$data->has('%1\$s'))) {
+            \$value = \$data->get('%1\$s');
+            if (\$value instanceof PackedArray || \$value instanceof Document) {
+                \$value = \$value->toPHP(DocumentManager::CLIENT_TYPEMAP);
+            }
             if (\$value !== null) {
                 \$typeIdentifier = \$this->class->fieldMappings['%2\$s']['type'];
                 %3\$s
@@ -226,11 +232,11 @@ EOF
                     <<<'EOF'
 
         // ReferenceOne
-        if (isset($data['%1$s']) || (! empty($this->class->fieldMappings['%2$s']['nullable']) && array_key_exists('%1$s', $data))) {
-            $return = $data['%1$s'];
+        if ($data->has('%1$s') || (! empty($this->class->fieldMappings['%2$s']['nullable']) && $data->has('%1$s'))) {
+            $return = $data->get('%1$s');
             if ($return !== null) {
-                if ($this->class->fieldMappings['%2$s']['storeAs'] !== ClassMetadata::REFERENCE_STORE_AS_ID && ! is_array($return)) {
-                    throw HydratorException::associationTypeMismatch('%3$s', '%1$s', 'array', gettype($return));
+                if ($this->class->fieldMappings['%2$s']['storeAs'] !== ClassMetadata::REFERENCE_STORE_AS_ID && ! $return instanceof Document) {
+                    throw HydratorException::associationTypeMismatch('%3$s', '%1$s', Document::class, get_debug_type($return));
                 }
 
                 $className = $this->dm->getClassNameForAssociation($this->class->fieldMappings['%2$s'], $return);
@@ -295,10 +301,10 @@ EOF
                     <<<'EOF'
 
         // ReferenceMany & EmbedMany
-        $mongoData = $data['%1$s'] ?? null;
+        $mongoData = $data->has('%1$s') ? $data->get('%1$s') : null;
 
-        if ($mongoData !== null && ! is_array($mongoData)) {
-            throw HydratorException::associationTypeMismatch('%3$s', '%1$s', 'array', gettype($mongoData));
+        if ($mongoData !== null && ! $mongoData instanceof PackedArray && ! $mongoData instanceof Document) {
+            throw HydratorException::associationTypeMismatch('%3$s', '%1$s', Document::class . '|' . PackedArray::class, get_debug_type($mongoData));
         }
 
         $return = $this->dm->getConfiguration()->getPersistentCollectionFactory()->create($this->dm, $this->class->fieldMappings['%2$s']);
@@ -322,13 +328,13 @@ EOF
                     <<<'EOF'
 
         // EmbedOne
-        if (isset($data['%1$s']) || (! empty($this->class->fieldMappings['%2$s']['nullable']) && array_key_exists('%1$s', $data))) {
-            $return = $data['%1$s'];
+        if ($data->has('%1$s') || (! empty($this->class->fieldMappings['%2$s']['nullable']) && $data->has('%1$s'))) {
+            $return = $data->get('%1$s');
             if ($return !== null) {
                 $embeddedDocument = $return;
 
-                if (! is_array($embeddedDocument)) {
-                    throw HydratorException::associationTypeMismatch('%3$s', '%1$s', 'array', gettype($embeddedDocument));
+                if (! $embeddedDocument instanceof Document) {
+                    throw HydratorException::associationTypeMismatch('%3$s', '%1$s', Document::class, get_debug_type($embeddedDocument));
                 }
         
                 $className = $this->dm->getClassNameForAssociation($this->class->fieldMappings['%2$s'], $embeddedDocument);
@@ -370,9 +376,11 @@ use Doctrine\ODM\MongoDB\Hydrator\HydratorException;
 use Doctrine\ODM\MongoDB\Hydrator\HydratorInterface;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
+use MongoDB\BSON\Document;
+use MongoDB\BSON\PackedArray;
 
 use function array_key_exists;
-use function gettype;
+use function get_debug_type;
 use function is_array;
 
 /**
@@ -382,10 +390,11 @@ class $hydratorClassName implements HydratorInterface
 {
     public function __construct(private DocumentManager \$dm, private ClassMetadata \$class) {}
 
-    public function hydrate(object \$document, array \$data, array \$hints = []): array
+    public function hydrate(object \$document, Document \$data, array \$hints = []): array
     {
         \$hydratedData = [];
-%s        return \$hydratedData;
+%s
+        return \$hydratedData;
     }
 }
 EOF
@@ -420,18 +429,16 @@ EOF
     /**
      * Hydrate array of MongoDB document data into the given document object.
      *
-     * @param array<string, mixed> $data
      * @phpstan-param Hints $hints Any hints to account for during reconstitution/lookup of the document.
      *
      * @return array<string, mixed>
      */
-    public function hydrate(object $document, array $data, array $hints = []): array
+    public function hydrate(object $document, Document $data, array $hints = []): array
     {
         $metadata = $this->dm->getClassMetadata($document::class);
         // Invoke preLoad lifecycle events and listeners
         if (! empty($metadata->lifecycleCallbacks[Events::preLoad])) {
-            $args = [new PreLoadEventArgs($document, $this->dm, $data)];
-            $metadata->invokeLifecycleCallbacks(Events::preLoad, $document, $args);
+            $metadata->invokeLifecycleCallbacks(Events::preLoad, $document, [new PreLoadEventArgs($document, $this->dm, $data)]);
         }
 
         $this->evm->dispatchEvent(Events::preLoad, new PreLoadEventArgs($document, $this->dm, $data));
@@ -441,8 +448,8 @@ EOF
             foreach ($metadata->alsoLoadMethods as $method => $fieldNames) {
                 foreach ($fieldNames as $fieldName) {
                     // Invoke the method only once for the first field we find
-                    if (array_key_exists($fieldName, $data)) {
-                        $document->$method($data[$fieldName]);
+                    if ($data->has($fieldName)) {
+                        $document->$method($data->get($fieldName));
                         continue 2;
                     }
                 }

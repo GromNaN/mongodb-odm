@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Doctrine\ODM\MongoDB\Query\Query;
 use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
+use MongoDB\BSON\Document;
 
 use function assert;
 
@@ -16,14 +17,14 @@ class GH1418Test extends BaseTestCase
     public function testManualHydrateAndMerge(): void
     {
         $document = new GH1418Document();
-        $this->dm->getHydratorFactory()->hydrate($document, [
+        $this->dm->getHydratorFactory()->hydrate($document, Document::fromPHP([
             '_id' => 1,
             'name' => 'maciej',
             'embedOne' => ['name' => 'maciej', 'sourceId' => 1],
             'embedMany' => [
                 ['name' => 'maciej', 'sourceId' => 2],
             ],
-        ], [Query::HINT_READ_ONLY => true]);
+        ]), [Query::HINT_READ_ONLY => true]);
 
         self::assertEquals(1, $document->embedOne->id);
         self::assertEquals(2, $document->embedMany->first()->id);

@@ -17,6 +17,7 @@ use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Doctrine\ODM\MongoDB\MongoDBException;
 use Doctrine\ODM\MongoDB\UnitOfWork;
 use InvalidArgumentException;
+use MongoDB\BSON\Document;
 use MongoDB\Collection;
 use MongoDB\DeleteResult;
 use MongoDB\Driver\ReadPreference;
@@ -35,7 +36,6 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
-use function is_array;
 use function is_callable;
 use function is_string;
 
@@ -216,7 +216,7 @@ final class Query implements IterableResult
         if (
             ($this->query['type'] === self::TYPE_FIND_AND_UPDATE ||
                 $this->query['type'] === self::TYPE_FIND_AND_REMOVE) &&
-            is_array($results) && isset($results['_id'])
+            $results instanceof Document && $results->has('_id')
         ) {
             $results = $uow->getOrCreateDocument($this->class->name, $results, $this->unitOfWorkHints);
 

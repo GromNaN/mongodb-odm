@@ -12,6 +12,8 @@ use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Doctrine\ODM\MongoDB\MongoDBException;
 use Doctrine\ODM\MongoDB\UnitOfWork;
 use Doctrine\ODM\MongoDB\Utility\CollectionHelper;
+use MongoDB\BSON\Document;
+use MongoDB\BSON\PackedArray;
 use ReturnTypeWillChange;
 use Traversable;
 
@@ -84,10 +86,8 @@ trait PersistentCollectionTrait
 
     /**
      * The raw mongo data that will be used to initialize this collection.
-     *
-     * @var mixed[]
      */
-    private array $mongoData = [];
+    private Document|PackedArray $mongoData;
 
     /**
      * Any hints to account for during reconstitution/lookup of the documents.
@@ -103,14 +103,14 @@ trait PersistentCollectionTrait
         $this->uow = $dm->getUnitOfWork();
     }
 
-    public function setMongoData(array $mongoData)
+    public function setMongoData(Document|PackedArray $mongoData)
     {
         $this->mongoData = $mongoData;
     }
 
     public function getMongoData()
     {
-        return $this->mongoData;
+        return $this->mongoData ?? null;
     }
 
     public function setHints(array $hints)
@@ -143,7 +143,7 @@ trait PersistentCollectionTrait
         $this->uow->loadCollection($this);
         $this->takeSnapshot();
 
-        $this->mongoData = [];
+        unset($this->mongoData);
 
         // Reattach any NEW objects added through add()
         if (! $newObjects) {
@@ -480,7 +480,7 @@ trait PersistentCollectionTrait
             }
         }
 
-        $this->mongoData = [];
+        unset($this->mongoData);
         $this->coll->clear();
 
         // Nothing to do for inverse-side collections
