@@ -74,7 +74,7 @@ class UnitOfWorkTest extends BaseTestCase
         $user->id = new ObjectId();
         self::assertEmpty($this->uow->getScheduledDocumentUpserts());
         $this->uow->scheduleForUpsert($class, $user);
-        self::assertEquals([spl_object_hash($user) => $user], $this->uow->getScheduledDocumentUpserts());
+        self::assertEquals([$user], $this->uow->getScheduledDocumentUpserts());
     }
 
     public function testScheduleForEmbeddedUpsert(): void
