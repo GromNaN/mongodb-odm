@@ -414,7 +414,7 @@ final class PersistenceBuilder
         if (! isset($embeddedMapping['targetDocument'])) {
             $discriminatorField = $embeddedMapping['discriminatorField'];
             if (! empty($embeddedMapping['discriminatorMap'])) {
-                $discriminatorValue = array_search($class->name, $embeddedMapping['discriminatorMap']);
+                $discriminatorValue = array_search($class->name, $embeddedMapping['discriminatorMap'], true);
 
                 if ($discriminatorValue === false) {
                     throw MappingException::unlistedClassInDiscriminatorMap($class->name);

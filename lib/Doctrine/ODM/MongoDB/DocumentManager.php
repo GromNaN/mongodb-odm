@@ -833,7 +833,7 @@ class DocumentManager implements ObjectManager
 
         if ($discriminatorValue === null) {
             if (! empty($discriminatorMap)) {
-                $pos = array_search($class->name, $discriminatorMap);
+                $pos = array_search($class->name, $discriminatorMap, true);
 
                 if ($pos !== false) {
                     $discriminatorValue = $pos;
