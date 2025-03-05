@@ -30,6 +30,7 @@ abstract class Type
     public const STRING             = 'string';
     public const DATE               = 'date';
     public const DATE_IMMUTABLE     = 'date_immutable';
+    public const DATE_POINT         = 'date_point';
     public const KEY                = 'key';
     public const TIMESTAMP          = 'timestamp';
     public const BINDATA            = 'bin';
@@ -70,6 +71,7 @@ abstract class Type
         self::STRING => Types\StringType::class,
         self::DATE => Types\DateType::class,
         self::DATE_IMMUTABLE => Types\DateImmutableType::class,
+        self::DATE_POINT => Types\DatePointType::class,
         self::KEY => Types\KeyType::class,
         self::TIMESTAMP => Types\TimestampType::class,
         self::BINDATA => Types\BinDataType::class,

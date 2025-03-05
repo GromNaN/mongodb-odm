@@ -31,6 +31,7 @@ use ReflectionEnum;
 use ReflectionNamedType;
 use ReflectionProperty;
 
+use Symfony\Component\Clock\DatePoint;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
@@ -2733,6 +2734,9 @@ use function trigger_deprecation;
                 break;
             case DateTimeImmutable::class:
                 $mapping['type'] = Type::DATE_IMMUTABLE;
+                break;
+            case DatePoint::class:
+                $mapping['type'] = Type::DATE_POINT;
                 break;
             case 'array':
                 $mapping['type'] = Type::HASH;
