@@ -29,10 +29,8 @@ use Doctrine\ODM\MongoDB\UnitOfWork;
 use Doctrine\ODM\MongoDB\Utility\CollectionHelper;
 use Doctrine\Persistence\Mapping\MappingException;
 use InvalidArgumentException;
-use Iterator as SplIterator;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Collection;
-use MongoDB\Driver\CursorInterface;
 use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Driver\Exception\Exception as DriverException;
 use MongoDB\Driver\Session;
@@ -89,7 +87,7 @@ use function trigger_deprecation;
  */
 final class DocumentPersister
 {
-    private ?Collection $collection = null;
+    private Collection $collection;
 
     private ?Bucket $bucket = null;
 
@@ -226,7 +224,6 @@ final class DocumentPersister
         }
 
         try {
-            assert($this->collection instanceof Collection);
             $this->collection->insertMany($inserts, $options);
         } catch (DriverException $e) {
             $this->queuedInserts = [];
@@ -334,7 +331,6 @@ final class DocumentPersister
         }
 
         try {
-            assert($this->collection instanceof Collection);
             $this->collection->updateOne($criteria, $data, $options);
 
             return;
@@ -344,7 +340,6 @@ final class DocumentPersister
             }
         }
 
-        assert($this->collection instanceof Collection);
         $this->collection->updateOne($criteria, ['$set' => new stdClass()], $options);
     }
 
@@ -398,7 +393,6 @@ final class DocumentPersister
 
             $options = $this->getWriteOptions($options);
 
-            assert($this->collection instanceof Collection);
             $result = $this->collection->updateOne($query, $update, $options);
 
             if (($this->class->isVersioned || $this->class->isLockable) && $result->getModifiedCount() !== 1) {
@@ -439,7 +433,6 @@ final class DocumentPersister
 
         $options = $this->getWriteOptions($options);
 
-        assert($this->collection instanceof Collection);
         $result = $this->collection->deleteOne($query, $options);
 
         if (($this->class->isVersioned || $this->class->isLockable) && ! $result->getDeletedCount()) {
@@ -452,7 +445,6 @@ final class DocumentPersister
      */
     public function refresh(object $document): void
     {
-        assert($this->collection instanceof Collection);
         $query = $this->getQueryForDocument($document);
         $data  = $this->collection->findOne($query);
         if ($data === null) {
@@ -498,7 +490,6 @@ final class DocumentPersister
             $options['sort'] = $this->prepareSort($sort);
         }
 
-        assert($this->collection instanceof Collection);
         $result = $this->collection->findOne($criteria, $options);
         $result = $result !== null ? (array) $result : null;
 
@@ -541,12 +532,10 @@ final class DocumentPersister
             $options['skip'] = $skip;
         }
 
-        assert($this->collection instanceof Collection);
         $baseCursor = $this->collection->find($criteria, $options);
 
-        assert($baseCursor instanceof CursorInterface && $baseCursor instanceof SplIterator);
-
-        return $this->wrapCursor($baseCursor);
+        // Wraps the supplied base cursor in the corresponding ODM class.
+        return new CachingIterator(new HydratingIterator($baseCursor, $this->dm->getUnitOfWork(), $this->class));
     }
 
     /**
@@ -590,20 +579,11 @@ final class DocumentPersister
     }
 
     /**
-     * Wraps the supplied base cursor in the corresponding ODM class.
-     */
-    private function wrapCursor(SplIterator&CursorInterface $baseCursor): Iterator
-    {
-        return new CachingIterator(new HydratingIterator($baseCursor, $this->dm->getUnitOfWork(), $this->class));
-    }
-
-    /**
      * Checks whether the given managed document exists in the database.
      */
     public function exists(object $document): bool
     {
         $id = $this->class->getIdentifierObject($document);
-        assert($this->collection instanceof Collection);
 
         return (bool) $this->collection->findOne(['_id' => $id], ['_id']);
     }
@@ -616,7 +596,7 @@ final class DocumentPersister
         $id          = $this->uow->getDocumentIdentifier($document);
         $criteria    = ['_id' => $this->class->getDatabaseIdentifierValue($id)];
         $lockMapping = $this->class->fieldMappings[$this->class->lockField];
-        assert($this->collection instanceof Collection);
+
         $this->collection->updateOne($criteria, ['$set' => [$lockMapping['name'] => $lockMode]]);
         $this->class->reflFields[$this->class->lockField]->setValue($document, $lockMode);
     }
@@ -629,7 +609,7 @@ final class DocumentPersister
         $id          = $this->uow->getDocumentIdentifier($document);
         $criteria    = ['_id' => $this->class->getDatabaseIdentifierValue($id)];
         $lockMapping = $this->class->fieldMappings[$this->class->lockField];
-        assert($this->collection instanceof Collection);
+
         $this->collection->updateOne($criteria, ['$unset' => [$lockMapping['name'] => true]]);
         $this->class->reflFields[$this->class->lockField]->setValue($document, null);
     }
