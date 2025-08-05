@@ -35,8 +35,7 @@ class GenerateProxiesCommand extends Command
 {
     use CommandCompatibility;
 
-    /** @return void */
-    protected function configure()
+    protected function configure(): void
     {
         $this
         ->setName('odm:generate:proxies')

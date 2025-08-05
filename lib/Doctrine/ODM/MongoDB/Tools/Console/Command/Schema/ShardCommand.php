@@ -19,8 +19,7 @@ class ShardCommand extends AbstractCommand
 {
     use CommandCompatibility;
 
-    /** @return void */
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 

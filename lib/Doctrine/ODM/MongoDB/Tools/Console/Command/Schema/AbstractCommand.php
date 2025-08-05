@@ -24,8 +24,7 @@ abstract class AbstractCommand extends Command
     public const INDEX        = 'index';
     public const SEARCH_INDEX = 'search-index';
 
-    /** @return void */
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
