@@ -137,7 +137,7 @@ jobs:
         run: |
           composer config minimum-stability dev
           # incompatible with Symfony 8.0
-          composer remove --no-update --dev doctrine/orm phpbench/phpbench
+          composer remove --no-update --dev phpbench/phpbench
           # update symfony deps
           composer require --no-update symfony/console:^${{ matrix.symfony-version }}
           composer require --no-update symfony/var-dumper:^${{ matrix.symfony-version }}
