@@ -30,7 +30,7 @@ class CreateCommand extends AbstractCommand
         self::SEARCH_INDEX => ['search index(es)', 'search indexes'],
     ];
 
-    protected function configure(): void
+    private function doConfigure(): void
     {
         parent::configure();
 

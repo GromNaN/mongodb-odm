@@ -31,7 +31,7 @@ class GenerateHydratorsCommand extends Command
 {
     use CommandCompatibility;
 
-    protected function configure(): void
+    private function doConfigure(): void
     {
         $this
         ->setName('odm:generate:hydrators')

@@ -19,7 +19,7 @@ class UpdateCommand extends AbstractCommand
 {
     use CommandCompatibility;
 
-    protected function configure(): void
+    private function doConfigure(): void
     {
         parent::configure();
 

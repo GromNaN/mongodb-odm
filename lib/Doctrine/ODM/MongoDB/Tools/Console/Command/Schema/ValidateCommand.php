@@ -19,7 +19,7 @@ class ValidateCommand extends Command
 {
     use CommandCompatibility;
 
-    protected function configure(): void
+    private function doConfigure(): void
     {
         $this
             ->setName('odm:schema:validate')
