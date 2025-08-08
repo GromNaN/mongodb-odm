@@ -31,7 +31,7 @@ class DropCommand extends AbstractCommand
         self::SEARCH_INDEX => ['search index(es)', 'search indexes'],
     ];
 
-    protected function configure(): void
+    protected function doConfigure(): void
     {
         $this
             ->setName('odm:schema:drop')
