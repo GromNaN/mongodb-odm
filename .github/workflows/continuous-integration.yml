@@ -136,12 +136,13 @@ jobs:
         if: "${{ matrix.symfony-version != 'stable' }}"
         run: |
           composer config minimum-stability dev
-          # incompatible with Symfony 8.0
-          composer remove --no-update --dev phpbench/phpbench
           # update symfony deps
           composer require --no-update symfony/console:^${{ matrix.symfony-version }}
           composer require --no-update symfony/var-dumper:^${{ matrix.symfony-version }}
-          composer require --no-update --dev symfony/cache:^${{ matrix.symfony-version }}
+          if dpkg --compare-versions "${{ matrix.symfony-version }}" lt "8.0"; then
+            # LazyGhostTrait was removed from symfony/var-exporter >= 8.0
+            composer require --no-update --dev symfony/cache:^${{ matrix.symfony-version }}
+          fi
 
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v3"
