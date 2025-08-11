@@ -83,4 +83,47 @@ class UpdateCommandTest extends AbstractCommandTestCase
         $output = $this->commandTester->getDisplay();
         self::assertStringNotContainsString('Updated validation for all classes', $output);
     }
+
+    public function testItUpdatesAllMappedCollections(): void
+    {
+        $this->commandTester->execute([]);
+        $output = $this->commandTester->getDisplay();
+
+        self::assertStringContainsString('Updated indexes for all classes', $output);
+        self::assertStringContainsString('Updated validation for all classes', $output);
+        self::assertStringContainsString('Updated search indexes for all classes', $output);
+    }
+
+    public function testItUpdatesACollectionForASingleClass(): void
+    {
+        $this->commandTester->execute(['--class' => SchemaValidated::class]);
+        $output = $this->commandTester->getDisplay();
+
+        self::assertStringContainsString('Updated index(es) for Documents\SchemaValidated', $output);
+        self::assertStringContainsString('Updated validation for Documents\SchemaValidated', $output);
+        self::assertStringContainsString('Updated search index(es) for Documents\SchemaValidated', $output);
+    }
+
+    public function testItSkipsSearchIndexes(): void
+    {
+        $this->commandTester->execute(['--skip-search-indexes' => true]);
+        $output = $this->commandTester->getDisplay();
+
+        self::assertStringContainsString('Updated indexes for all classes', $output);
+        self::assertStringContainsString('Updated validation for all classes', $output);
+        self::assertStringNotContainsString('Updated search indexes for all classes', $output);
+    }
+
+    public function testItSkipsSearchIndexesForSingleClass(): void
+    {
+        $this->commandTester->execute([
+            '--class' => SchemaValidated::class,
+            '--skip-search-indexes' => true,
+        ]);
+        $output = $this->commandTester->getDisplay();
+
+        self::assertStringContainsString('Updated index(es) for Documents\SchemaValidated', $output);
+        self::assertStringContainsString('Updated validation for Documents\SchemaValidated', $output);
+        self::assertStringNotContainsString('Updated search index(es) for Documents\SchemaValidated', $output);
+    }
 }

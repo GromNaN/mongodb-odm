@@ -7,7 +7,7 @@ namespace Documents;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Doctrine\ODM\MongoDB\Mapping\Annotations\Index;
 
-#[Index(keys: ['slug' => 'asc'], options: ['unique' => 'true'])]
+#[Index(keys: ['slug' => 'asc'], options: ['unique' => true])]
 #[ODM\MappedSuperclass]
 abstract class CmsPage
 {
