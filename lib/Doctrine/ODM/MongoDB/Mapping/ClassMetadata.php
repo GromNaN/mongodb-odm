@@ -2511,21 +2511,6 @@ use function trigger_deprecation;
         $this->checkDuplicateMapping($mapping);
         $this->typeRequirementsAreMet($mapping);
 
-        $deprecatedTypes = [
-            Type::BOOLEAN => Type::BOOL,
-            Type::INTEGER => Type::INT,
-            Type::INTID => Type::INT,
-        ];
-        if (isset($deprecatedTypes[$mapping['type']])) {
-            trigger_deprecation(
-                'doctrine/mongodb-odm',
-                '2.1',
-                'The "%s" mapping type is deprecated. Use "%s" instead.',
-                $mapping['type'],
-                $deprecatedTypes[$mapping['type']],
-            );
-        }
-
         $this->fieldMappings[$mapping['fieldName']] = $mapping;
         if (isset($mapping['association'])) {
             $this->associationMappings[$mapping['fieldName']] = $mapping;
