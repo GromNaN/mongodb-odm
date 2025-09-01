@@ -30,7 +30,7 @@ abstract class AbstractField implements Annotation
         ?string $type = null,
         bool $nullable = false,
         array $options = [],
-        ?string $strategy = null,
+        string|int|null $strategy = null,
         bool $notSaved = false,
     ) {
         $this->name     = $name;

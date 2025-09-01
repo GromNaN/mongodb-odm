@@ -2358,7 +2358,7 @@ use function trigger_deprecation;
             $mapping['name']  = '_id';
             $this->identifier = $mapping['fieldName'];
             if (isset($mapping['strategy'])) {
-                $this->generatorType = constant(self::class . '::GENERATOR_TYPE_' . strtoupper($mapping['strategy']));
+                $this->generatorType = is_string($mapping['strategy']) ? constant(self::class . '::GENERATOR_TYPE_' . strtoupper($mapping['strategy'])) : $mapping['strategy'];
             }
 
             $this->generatorOptions = $mapping['options'] ?? [];
