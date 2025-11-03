@@ -37,11 +37,9 @@ class GH774Test extends BaseTestCase
 abstract class GH774AbstractThread
 {
     /**
-     * @ODM\Id
-     *
      * @var string|null
      */
-    public $id;
+    public string$id;
 
     /** @var string|null */
     public $permalink;

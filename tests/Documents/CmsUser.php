@@ -8,73 +8,35 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 
-/** @ODM\Document */
 #[ODM\Document]
 class CmsUser
 {
-    /**
-     * @ODM\Id
-     *
-     * @var string|null
-     */
     #[ODM\Id]
-    public $id;
+    public string $id;
 
-    /**
-     * @ODM\Field(type="string")
-     *
-     * @var string|null
-     */
-    #[ODM\Field(type: 'string')]
-    public $status;
+    #[ODM\Field]
+    public string $status;
 
-    /**
-     * @ODM\Field(type="string")
-     *
-     * @var string|null
-     */
-    #[ODM\Field(type: 'string')]
-    public $username;
+    #[ODM\Field]
+    public ?string $username;
 
-    /**
-     * @ODM\Field(type="string")
-     *
-     * @var string|null
-     */
-    #[ODM\Field(type: 'string')]
-    public $name;
+    #[ODM\Field]
+    public ?string $name;
 
-    /**
-     * @ODM\ReferenceMany(targetDocument=CmsPhonenumber::class, mappedBy="user", cascade={"persist", "remove", "merge"})
-     *
-     * @var Collection<int, CmsPhonenumber>
-     */
+    /** @var Collection<int, CmsPhonenumber> */
     #[ODM\ReferenceMany(targetDocument: CmsPhonenumber::class, mappedBy: 'user', cascade: ['persist', 'remove', 'merge'])]
-    public $phonenumbers;
+    public Collection $phonenumbers;
 
-    /**
-     * @ODM\ReferenceMany(targetDocument=CmsArticle::class)
-     *
-     * @var Collection<int, CmsArticle>
-     */
+    /** @var Collection<int, CmsArticle> */
     #[ODM\ReferenceMany(targetDocument: CmsArticle::class)]
-    public $articles;
+    public Collection $articles;
 
-    /**
-     * @ODM\ReferenceOne(targetDocument=CmsAddress::class, cascade={"persist"})
-     *
-     * @var CmsAddress
-     */
     #[ODM\ReferenceOne(targetDocument: CmsAddress::class, cascade: ['persist'])]
-    public $address;
+    public CmsAddress $address;
 
-    /**
-     * @ODM\ReferenceMany(targetDocument=CmsGroup::class, cascade={"persist", "merge"})
-     *
-     * @var Collection<int, CmsGroup>
-     */
+    /** @var Collection<int, CmsGroup> */
     #[ODM\ReferenceMany(targetDocument: CmsGroup::class, cascade: ['persist', 'merge'])]
-    public $groups;
+    public Collection $groups;
 
     public function __construct()
     {

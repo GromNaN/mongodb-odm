@@ -876,7 +876,7 @@ class AbstractMappingDriverUser
      *
      * @var string|null
      */
-    #[ODM\Field(type: 'string')]
+    #[ODM\Field]
     #[ODM\UniqueIndex(order: 'desc')]
     public $email;
 
@@ -1102,52 +1102,27 @@ class Phonenumber
 class InvalidMappingDocument
 {
     /** @var string|null */
-    public $id;
+    public string $id;
 }
 
 /** @ODM\File(chunkSizeBytes=12345) */
 #[ODM\File(chunkSizeBytes: 12345)]
 class AbstractMappingDriverFile
 {
-    /**
-     * @ODM\Id
-     *
-     * @var string|null
-     */
     #[ODM\Id]
-    public $id;
+    public string $id;
 
-    /**
-     * @ODM\File\Length
-     *
-     * @var int|null
-     */
     #[ODM\File\Length]
     public $size;
 
-    /**
-     * @ODM\File\ChunkSize
-     *
-     * @var int|null
-     */
     #[ODM\File\ChunkSize]
-    public $chunkSize;
+    public ?int $chunkSize;
 
-    /**
-     * @ODM\File\Filename
-     *
-     * @var string|null
-     */
     #[ODM\File\Filename]
-    public $name;
+    public ?string $name;
 
-    /**
-     * @ODM\File\Metadata(targetDocument=AbstractMappingDriverFileMetadata::class)
-     *
-     * @var AbstractMappingDriverFileMetadata|null
-     */
     #[ODM\File\Metadata(targetDocument: AbstractMappingDriverFileMetadata::class)]
-    public $metadata;
+    public ?AbstractMappingDriverFileMetadata $metadata;
 
     /**
      * @ODM\File\UploadDate
@@ -1179,7 +1154,7 @@ class AbstractMappingDriverFileWithCustomRepository
      * @var string|null
      */
     #[ODM\Id]
-    public $id;
+    public string $id;
 }
 
 /** @template-extends DefaultGridFSRepository<AbstractMappingDriverFileWithCustomRepository> */
@@ -1191,190 +1166,90 @@ class AbstractMappingDriverGridFSRepository extends DefaultGridFSRepository
 #[ODM\MappedSuperclass]
 class AbstractMappingDriverSuperClass
 {
-    /**
-     * @ODM\Id
-     *
-     * @var string|null
-     */
     #[ODM\Id]
-    public $id;
+    public string $id;
 
-    /**
-     * @ODM\Field(type="string")
-     *
-     * @var string|int|null
-     */
-    #[ODM\Field(type: 'string')]
-    protected $override;
+    #[ODM\Field]
+    protected string|int|null $override;
 }
 
 /** @ODM\Document */
 #[ODM\Document]
 class AbstractMappingDriverDuplicateDatabaseName extends AbstractMappingDriverSuperClass
 {
-    /**
-     * @ODM\Field(type="int")
-     *
-     * @var int|null
-     */
     #[ODM\Field(type: 'int')]
-    public $override;
+    public ?int $override;
 
-    /**
-     * @ODM\Field(type="string", name="baz")
-     *
-     * @var string|null
-     */
     #[ODM\Field(type: 'string', name: 'baz')]
-    public $foo;
+    public ?string $foo;
 
-    /**
-     * @ODM\Field(type="string", name="baz")
-     *
-     * @var string|null
-     */
     #[ODM\Field(type: 'string', name: 'baz')]
-    public $bar;
+    public ?string $bar;
 }
 
 /** @ODM\Document */
 #[ODM\Document]
 class AbstractMappingDriverDuplicateDatabaseNameNotSaved extends AbstractMappingDriverSuperClass
 {
-    /**
-     * @ODM\Field(type="int")
-     *
-     * @var int|null
-     */
     #[ODM\Field(type: 'int')]
-    public $override;
+    public ?int $override;
 
-    /**
-     * @ODM\Field(type="string", name="baz")
-     *
-     * @var string|null
-     */
+    // In
     #[ODM\Field(type: 'int', name: 'baz')]
-    public $foo;
+    public ?string $foo;
 
-    /**
-     * @ODM\Field(type="string", name="baz", notSaved=true)
-     *
-     * @var string|null
-     */
     #[ODM\Field(type: 'int', name: 'baz', notSaved: true)]
-    public $bar;
+    public ?string $bar;
 }
 
-/** @ODM\View(rootClass=AbstractMappingDriverUser::class) */
 #[ODM\View(rootClass: AbstractMappingDriverUser::class)]
 class AbstractMappingDriverViewWithoutRepository
 {
-    /**
-     * @ODM\Id
-     *
-     * @var string|null
-     */
     #[ODM\Id]
-    public $id;
+    public string $id;
 
-    /**
-     * @ODM\Field(type="string")
-     *
-     * @var string|null
-     */
-    #[ODM\Field(type: 'string')]
-    public $name;
+    #[ODM\Field]
+    public ?string $name;
 }
 
-/** @ODM\View(repositoryClass=DocumentRepository::class, rootClass=AbstractMappingDriverUser::class) */
 #[ODM\View(repositoryClass: DocumentRepository::class, rootClass: AbstractMappingDriverUser::class)]
 class AbstractMappingDriverViewWithWrongRepository
 {
-    /**
-     * @ODM\Id
-     *
-     * @var string|null
-     */
     #[ODM\Id]
-    public $id;
+    public string $id;
 
-    /**
-     * @ODM\Field(type="string")
-     *
-     * @var string|null
-     */
-    #[ODM\Field(type: 'string')]
-    public $name;
+    #[ODM\Field]
+    public ?string $name;
 }
 
-/** @ODM\View(repositoryClass=AbstractMappingDriverViewRepository::class) */
 #[ODM\View(repositoryClass: AbstractMappingDriverViewRepository::class)]
 class AbstractMappingDriverViewWithoutRootClass
 {
-    /**
-     * @ODM\Id
-     *
-     * @var string|null
-     */
     #[ODM\Id]
-    public $id;
+    public string $id;
 
-    /**
-     * @ODM\Field(type="string")
-     *
-     * @var string|null
-     */
-    #[ODM\Field(type: 'string')]
-    public $name;
+    #[ODM\Field]
+    public ?string $name;
 }
 
-/** @ODM\View(repositoryClass=AbstractMappingDriverViewRepository::class, rootClass="Doctrine\ODM\MongoDB\LolNo") */
 #[ODM\View(repositoryClass: AbstractMappingDriverViewRepository::class, rootClass: 'Doctrine\ODM\MongoDB\LolNo')]
 class AbstractMappingDriverViewWithNonExistingRootClass
 {
-    /**
-     * @ODM\Id
-     *
-     * @var string|null
-     */
     #[ODM\Id]
-    public $id;
+    public string $id;
 
-    /**
-     * @ODM\Field(type="string")
-     *
-     * @var string|null
-     */
-    #[ODM\Field(type: 'string')]
-    public $name;
+    #[ODM\Field]
+    public ?string $name;
 }
 
-/**
- * @ODM\View(
- *     repositoryClass=AbstractMappingDriverViewRepository::class,
- *     rootClass=AbstractMappingDriverUser::class,
- *     view="user_name",
- * )
- */
 #[ODM\View(repositoryClass: AbstractMappingDriverViewRepository::class, rootClass: AbstractMappingDriverUser::class, view: 'user_name')]
 class AbstractMappingDriverView
 {
-    /**
-     * @ODM\Id
-     *
-     * @var string|null
-     */
     #[ODM\Id]
-    public $id;
+    public string $id;
 
-    /**
-     * @ODM\Field(type="string")
-     *
-     * @var string|null
-     */
-    #[ODM\Field(type: 'string')]
-    public $name;
+    #[ODM\Field]
+    public ?string $name;
 }
 
 /**
@@ -1391,52 +1266,36 @@ class AbstractMappingDriverViewRepository extends DocumentRepository implements 
     }
 }
 
-/**
- * @ODM\Document(collection="cms_users", writeConcern=1, readOnly=true)
- * @ODM\TimeSeries(timeField="time", metaField="metadata", granularity=Granularity::Seconds, expireAfterSeconds=86400)
- */
 #[ODM\Document]
 #[ODM\TimeSeries(timeField: 'time', metaField: 'metadata', granularity: Granularity::Seconds, expireAfterSeconds: 86400)]
 class AbstractMappingDriverTimeSeriesDocumentWithGranularity
 {
-    /** @ODM\Id */
     #[ODM\Id]
     public ?string $id = null;
 
-    /** @ODM\Field(type="date") */
     #[ODM\Field(type: 'date')]
     public DateTime $time;
 
-    /** @ODM\Field */
     #[ODM\Field]
     public string $metadata;
 
-    /** @ODM\Field(type="int") */
     #[ODM\Field(type: 'int')]
     public int $value;
 }
 
-/**
- * @ODM\Document(collection="cms_users", writeConcern=1, readOnly=true)
- * @ODM\TimeSeries(timeField="time", metaField="metadata", expireAfterSeconds=86400, bucketMaxSpanSeconds=10, bucketRoundingSeconds=15)
- */
 #[ODM\Document]
 #[ODM\TimeSeries(timeField: 'time', metaField: 'metadata', expireAfterSeconds: 86400, bucketMaxSpanSeconds: 10, bucketRoundingSeconds: 15)]
 class AbstractMappingDriverTimeSeriesDocumentWithBucket
 {
-    /** @ODM\Id */
     #[ODM\Id]
     public ?string $id = null;
 
-    /** @ODM\Field(type="date") */
     #[ODM\Field(type: 'date')]
     public DateTime $time;
 
-    /** @ODM\Field */
     #[ODM\Field]
     public string $metadata;
 
-    /** @ODM\Field(type="int") */
-    #[ODM\Field(type: 'int')]
+    #[ODM\Field]
     public int $value;
 }

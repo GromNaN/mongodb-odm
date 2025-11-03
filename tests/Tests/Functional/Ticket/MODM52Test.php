@@ -36,12 +36,12 @@ class MODM52Test extends BaseTestCase
     }
 }
 
-/** @ODM\MappedSuperClass */
+#[ODM\MappedSuperclass]
 class MODM52Container
 {
     /** @var string|null */
     #[ODM\Field(type: 'string')]
-    public $value;
+    public string $value;
 
     /** @var Collection<int, MODM52Embedded>|array<MODM52Embedded> */
     #[ODM\EmbedMany(targetDocument: MODM52Embedded::class, strategy: 'set')]
