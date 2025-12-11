@@ -45,21 +45,38 @@ abstract class BaseTestCase extends TestCase
 {
     protected static ?bool $supportsTransactions;
     protected static bool $allowsTransactions = true;
-    protected ?DocumentManager $dm;
-    protected UnitOfWork $uow;
+
+    private int $dmCounter;
+    private int $uowCounter;
+
+    protected ?DocumentManager $dm {
+        get {
+            $this->dmCounter++;
+
+            return $this->dm;
+        }
+    }
+
+    protected UnitOfWork $uow {
+        get {
+            $this->uowCounter++;
+
+            return $this->uow;
+        }
+    }
     private bool $disableFailPoints = false;
 
     protected function setUp(): void
     {
-        $this->dm  = static::createTestDocumentManager();
-        $this->uow = $this->dm->getUnitOfWork();
+        $this->dmCounter  = 0;
+        $this->uowCounter = 0;
+        $this->dm         = static::createTestDocumentManager();
+        $this->uow        = $this->dm->getUnitOfWork();
     }
 
     protected function tearDown(): void
     {
-        if (! $this->dm) {
-            return;
-        }
+        self::assertGreaterThan(1, $this->dmCounter + $this->uowCounter, 'No call to $dm');
 
         $client = $this->dm->getClient();
 
