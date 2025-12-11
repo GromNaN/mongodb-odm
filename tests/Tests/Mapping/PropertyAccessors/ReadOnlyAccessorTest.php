@@ -6,10 +6,10 @@ namespace Doctrine\ODM\MongoDB\Tests\Mapping\PropertyAccessors;
 
 use Doctrine\ODM\MongoDB\Mapping\PropertyAccessors\PropertyAccessorFactory;
 use Doctrine\ODM\MongoDB\Mapping\PropertyAccessors\ReadonlyAccessor;
-use Doctrine\ODM\MongoDB\Tests\BaseTestCase;
 use LogicException;
+use PHPUnit\Framework\TestCase;
 
-class ReadOnlyAccessorTest extends BaseTestCase
+class ReadOnlyAccessorTest extends TestCase
 {
     public function testReadOnlyProperty(): void
     {
