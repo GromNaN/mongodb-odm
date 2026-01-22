@@ -34,6 +34,8 @@ use function sprintf;
  * @phpstan-import-type FieldMapping from ClassMetadata
  * @template TKey of array-key
  * @template T of object
+ *
+ * @deprecated
  */
 trait PersistentCollectionTrait
 {

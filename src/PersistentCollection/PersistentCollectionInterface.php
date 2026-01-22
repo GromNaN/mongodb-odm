@@ -88,7 +88,7 @@ interface PersistentCollectionInterface extends Collection, Selectable
      *
      * @return void
      */
-    public function setDirty($dirty);
+    public function setDirty(bool $dirty);
 
     /**
      * Sets the collection's owning document together with the AssociationMapping that
